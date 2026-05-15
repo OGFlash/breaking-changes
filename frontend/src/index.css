@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme variables — outside any layer to ensure highest cascade priority ── */
+:root {
+  color-scheme: light;
+  --color-bg:            #f8f9fa;
+  --color-surface:       #ffffff;
+  --color-nav-blur:      rgba(255,255,255,0.88);
+  --color-surface-raised:#f1f3f5;
+  --color-border:        #dee2e6;
+  --color-text-primary:  #0d0d0d;
+  --color-text-secondary:#343a40;
+  --color-text-muted:    #6c757d;
+  --gradient-article:    linear-gradient(to top, rgba(248,249,250,0.97) 0%, rgba(248,249,250,0.5) 50%, transparent 100%);
+}
+
+html.dark {
+  color-scheme: dark;
+  --color-bg:            #0a0a0a;
+  --color-surface:       #111111;
+  --color-nav-blur:      rgba(17,17,17,0.88);
+  --color-surface-raised:#1a1a1a;
+  --color-border:        #222222;
+  --color-text-primary:  #f0f0f0;
+  --color-text-secondary:#c8c8c8;
+  --color-text-muted:    #888888;
+  --gradient-article:    linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.5) 50%, transparent 100%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Syne', sans-serif;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Article body styles */
+  .article-body {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+  }
+
+  .article-body h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e63946;
+    color: var(--color-text-primary);
+  }
+
+  .article-body h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 1.5rem 0 0.75rem;
+    color: var(--color-text-primary);
+  }
+
+  .article-body p {
+    margin-bottom: 1.5rem;
+  }
+
+  .article-body a {
+    color: #00d4ff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .article-body a:hover {
+    color: #0099bb;
+  }
+
+  .article-body blockquote {
+    margin: 2rem 0;
+    padding: 1rem 1.5rem;
+    border-left: 4px solid #e63946;
+    background: var(--color-surface-raised);
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .article-body code:not(pre code) {
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #0099bb;
+  }
+
+  html.dark .article-body code:not(pre code) {
+    color: #00d4ff;
+  }
+
+  .article-body pre {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .article-body img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+  }
+
+  .article-body ul, .article-body ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .article-body li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent-red hover:bg-red-600 text-white font-semibold px-4 py-2 rounded transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply border border-border hover:border-text-muted text-text-muted hover:text-text-primary px-4 py-2 rounded transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-surface border border-border rounded-lg overflow-hidden;
+  }
+
+  .tag-badge {
+    @apply text-xs font-medium px-2 py-0.5 rounded bg-surface-raised border border-border text-text-muted hover:text-text-primary hover:border-text-muted transition-colors cursor-pointer;
+  }
+
+  .nav-scrolled {
+    background-color: var(--color-nav-blur);
+  }
+}

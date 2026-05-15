@@ -1,0 +1,18 @@
+{
+  "slug": "github-copilot-now-writes-entire-pull-requests",
+  "title": "GitHub Copilot Can Now Write Entire Pull Requests — Here's What That Actually Looks Like",
+  "subtitle": "Copilot Workspace moves from completing lines to completing features. We tested it across three real-world tasks.",
+  "excerpt": "GitHub's Copilot Workspace now takes a GitHub Issue and produces a plan, writes code across multiple files, and opens a PR. We ran it against real tasks to see if it delivers.",
+  "cover_image": "",
+  "category": "dev-tools",
+  "author": "alex-king",
+  "tags": ["github", "copilot", "ai", "developer-tools", "productivity"],
+  "status": "published",
+  "is_featured": false,
+  "is_breaking": false,
+  "published_at": "2025-01-08T08:00:00Z",
+  "updated_at": "2025-01-08T08:00:00Z",
+  "seo_title": "GitHub Copilot Workspace: Does AI-Generated Pull Requests Actually Work?",
+  "seo_description": "We tested Copilot Workspace's ability to write complete pull requests from GitHub Issues across three real development tasks.",
+  "body": "<h2>From Autocomplete to Autonomous Agent</h2><p>When GitHub introduced Copilot in 2021, the value proposition was simple: it autocompletes your code. Four years later, the pitch is fundamentally different. Copilot Workspace begins with a GitHub Issue, reasons about what changes are necessary, and produces a fully formed pull request — multiple files, updated tests, and a descriptive PR body.</p><p>This is not autocomplete. This is closer to delegating a task to a junior engineer and reviewing their output.</p><h2>How It Works in Practice</h2><p>The workflow begins in any GitHub repository. From an open issue, a new button appears: \"Open in Copilot Workspace.\" Clicking it launches a web-based environment where Copilot presents:</p><ol><li>Its interpretation of what the issue is asking for</li><li>A proposed plan of files to modify or create</li><li>The actual code changes, file by file</li></ol><p>You can edit any step of this process. If Copilot misunderstands the issue, you correct its interpretation. If the plan is wrong, you adjust it. The final code diff is yours to accept, modify, or reject before a PR is opened.</p><h2>What We Tested</h2><p>We ran three tasks: adding a dark mode toggle to a small React app, writing a Python CLI tool from a spec, and refactoring a database query layer. Results were mixed in a predictable way: simple, well-defined tasks produced clean output; ambiguous, architectural tasks required significant human intervention.</p><h2>The Bottom Line</h2><p>Copilot Workspace is impressive for scope-limited tasks with clear intent. Think bug fixes, small feature additions, and boilerplate generation. It struggles with anything requiring broader architectural judgment or knowledge of implicit conventions in a large codebase. That's not a criticism — it's an honest calibration of what the tool is useful for today.</p>"
+}

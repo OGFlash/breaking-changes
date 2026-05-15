@@ -1,0 +1,110 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  lint-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        env:
+          CONTENT_BUCKET: test-content
+          MEDIA_BUCKET: test-media
+          DYNAMODB_TABLE: test-views
+          JWT_SECRET: test-secret-do-not-use
+          ADMIN_PASSWORD: testpassword
+          AWS_DEFAULT_REGION: us-east-1
+
+  deploy:
+    name: Package & Deploy Lambda
+    runs-on: ubuntu-latest
+    needs: lint-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install deps into package dir
+        run: pip install -r requirements.txt -t package/
+
+      - name: Build zip
+        run: |
+          cp -r app package/
+          cp handler.py package/
+          cd package && zip -r ../lambda.zip . -q
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp lambda.zip s3://${{ secrets.LAMBDA_ARTIFACTS_BUCKET }}/backend/lambda.zip
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --s3-bucket ${{ secrets.LAMBDA_ARTIFACTS_BUCKET }} \
+            --s3-key backend/lambda.zip \
+            --publish
+
+      - name: Wait for update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+
+      - name: Update Lambda config (env vars)
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --environment "Variables={
+              CONTENT_BUCKET=${{ secrets.CONTENT_BUCKET }},
+              MEDIA_BUCKET=${{ secrets.MEDIA_BUCKET }},
+              DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }},
+              JWT_SECRET=${{ secrets.JWT_SECRET }},
+              ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }},
+              SES_SENDER_EMAIL=${{ secrets.SES_SENDER_EMAIL }},
+              ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }},
+              CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }},
+              CORS_ORIGINS=https://breakingchanges.dev
+            }"

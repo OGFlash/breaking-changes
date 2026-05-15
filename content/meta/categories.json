@@ -1,0 +1,47 @@
+[
+  {
+    "slug": "ai",
+    "name": "AI",
+    "description": "Artificial intelligence, large language models, and the companies building them.",
+    "color": "#6366f1",
+    "icon": "cpu",
+    "sort_order": 1,
+    "is_active": true
+  },
+  {
+    "slug": "gaming",
+    "name": "Gaming",
+    "description": "Console, PC, and mobile gaming — industry news, reviews, and controversy.",
+    "color": "#10b981",
+    "icon": "gamepad-2",
+    "sort_order": 2,
+    "is_active": true
+  },
+  {
+    "slug": "dev-tools",
+    "name": "Dev Tools",
+    "description": "IDEs, CLIs, frameworks, and the tools developers use every day.",
+    "color": "#f59e0b",
+    "icon": "terminal",
+    "sort_order": 3,
+    "is_active": true
+  },
+  {
+    "slug": "security",
+    "name": "Security",
+    "description": "Vulnerabilities, breaches, CVEs, and defensive security research.",
+    "color": "#ef4444",
+    "icon": "shield-alert",
+    "sort_order": 4,
+    "is_active": true
+  },
+  {
+    "slug": "business",
+    "name": "Business",
+    "description": "Acquisitions, funding rounds, layoffs, and the money behind the industry.",
+    "color": "#0ea5e9",
+    "icon": "briefcase",
+    "sort_order": 5,
+    "is_active": true
+  }
+]

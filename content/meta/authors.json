@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "alex-king",
+    "name": "Alex King",
+    "bio": "Senior editor at Breaking Changes. Writes about AI policy, developer tools, and the intersection of tech and culture. Former contributor at The Verge.",
+    "avatar_url": "",
+    "twitter": "alexking_dev",
+    "github": "alexking",
+    "website": "",
+    "email": ""
+  },
+  {
+    "slug": "riley-chen",
+    "name": "Riley Chen",
+    "bio": "Gaming and immersive tech journalist. Covers the console wars, AAA development, and the indie scene.",
+    "avatar_url": "",
+    "twitter": "rileychen_plays",
+    "github": "",
+    "website": "",
+    "email": ""
+  }
+]

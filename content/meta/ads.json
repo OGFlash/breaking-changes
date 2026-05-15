@@ -1,0 +1,27 @@
+[
+  {
+    "slot_id": "leaderboard_top",
+    "is_active": false,
+    "code": ""
+  },
+  {
+    "slot_id": "leaderboard_bottom",
+    "is_active": false,
+    "code": ""
+  },
+  {
+    "slot_id": "sidebar_article",
+    "is_active": false,
+    "code": ""
+  },
+  {
+    "slot_id": "inline_article",
+    "is_active": false,
+    "code": ""
+  },
+  {
+    "slot_id": "footer_banner",
+    "is_active": false,
+    "code": ""
+  }
+]

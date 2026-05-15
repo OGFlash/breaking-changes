@@ -1,0 +1,18 @@
+{
+  "slug": "npm-supply-chain-attack-popular-packages-compromised",
+  "title": "Critical npm Supply Chain Attack Targets Popular Packages With 50M+ Weekly Downloads",
+  "subtitle": "Malicious code injected into dependency tree — update immediately",
+  "excerpt": "A coordinated supply chain attack has compromised several high-download npm packages. The malicious payload exfiltrates environment variables including API keys and tokens.",
+  "cover_image": "",
+  "category": "security",
+  "author": "alex-king",
+  "tags": ["npm", "supply-chain", "security", "cve", "javascript"],
+  "status": "published",
+  "is_featured": false,
+  "is_breaking": true,
+  "published_at": "2025-01-05T15:30:00Z",
+  "updated_at": "2025-01-05T16:45:00Z",
+  "seo_title": "npm Supply Chain Attack: Which Packages Are Affected and How to Respond",
+  "seo_description": "A critical npm supply chain attack is actively exfiltrating environment variables. Learn which packages are compromised and how to audit your dependencies.",
+  "body": "<h2>What Happened</h2><p>Security researchers at Socket.dev identified a coordinated supply chain attack targeting the npm ecosystem. The attack vector begins with account takeovers of package maintainers, followed by new patch-level releases containing obfuscated malicious code that exfiltrates <code>process.env</code> to an attacker-controlled server.</p><p>The exfiltrated data includes any environment variables present in the Node.js process at the time the package is loaded — which in typical CI/CD and server environments means AWS credentials, API keys, database URLs, and authentication tokens.</p><h2>How to Check Your Project</h2><pre><code class=\"language-bash\">npx @socket/cli audit\nnpm audit --audit-level=moderate</code></pre><p>The Socket CLI provides the most complete picture. Standard <code>npm audit</code> will not catch this class of attack because the malicious code does not exploit a known vulnerability — it was deliberately authored and published.</p><h2>Immediate Actions</h2><p>If you believe you are affected:</p><ol><li>Rotate all secrets in your environment immediately — treat them as compromised</li><li>Audit CI/CD pipeline logs for outbound connections to unfamiliar endpoints</li><li>Pin your dependency versions and avoid automatic patch updates until you've audited your full tree</li><li>Enable npm provenance checks where available</li></ol><h2>The Broader Problem</h2><p>This is not the first npm supply chain attack and will not be the last. The registry's security model relies heavily on maintainer account security, which remains inconsistent. Until mandatory 2FA at publish time is enforced across all packages above a download threshold, this attack surface remains open.</p>"
+}
