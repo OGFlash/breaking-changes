@@ -256,7 +256,14 @@ export default function ArticleEditorPage() {
                 <span className="font-semibold text-text-primary text-sm">Article Settings</span>
                 <button onClick={() => setSettingsOpen(false)} className="p-1 text-text-muted hover:text-text-primary"><X className="w-4 h-4" /></button>
               </div>
-              <ArticleSettingsFields form={form} setForm={setForm} setDirty={setDirty} setSlugEdited={setSlugEdited} tagsInput={tagsInput} setTagsInput={setTagsInput} categories={categories} authors={authors} /> w-72 border-l border-border overflow-y-auto flex-shrink-0 bg-surface p-4 space-y-4">
+              <ArticleSettingsFields form={form} setForm={setForm} setDirty={setDirty} setSlugEdited={setSlugEdited} tagsInput={tagsInput} setTagsInput={setTagsInput} categories={categories} authors={authors} />
+            </aside>
+          </div>
+        )}
+
+        {/* Desktop settings sidebar */}
+        <aside className="hidden lg:flex flex-col w-80 border-l border-border bg-surface flex-shrink-0 overflow-y-auto p-4 space-y-4">
+          <span className="font-semibold text-text-primary text-sm">Article Settings</span>
           <ArticleSettingsFields form={form} setForm={setForm} setDirty={setDirty} setSlugEdited={setSlugEdited} tagsInput={tagsInput} setTagsInput={setTagsInput} categories={categories} authors={authors} />
         </aside>
       </div>

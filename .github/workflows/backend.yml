@@ -106,5 +106,5 @@ jobs:
               SES_SENDER_EMAIL=${{ secrets.SES_SENDER_EMAIL }},
               ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }},
               CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }},
-              CORS_ORIGINS=https://breakingchanges.dev
+              CORS_ORIGINS=https://breakchange.com,https://www.breakchange.com
             }"
