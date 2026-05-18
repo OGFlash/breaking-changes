@@ -105,6 +105,7 @@ jobs:
             --environment "Variables={
               CONTENT_BUCKET=${{ secrets.CONTENT_BUCKET }},
               MEDIA_BUCKET=${{ secrets.MEDIA_BUCKET }},
+              FRONTEND_BUCKET=${{ secrets.FRONTEND_BUCKET }},
               DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }},
               JWT_SECRET=${{ secrets.JWT_SECRET }},
               ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }},
