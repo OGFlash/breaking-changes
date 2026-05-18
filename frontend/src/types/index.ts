@@ -52,7 +52,7 @@ export interface Category {
   icon?: string
   description?: string
   sort_order: number
-  active: boolean
+  is_active: boolean
   article_count?: number
 }
 
@@ -103,5 +103,5 @@ export interface AdSlot {
   label: string
   description: string
   code: string
-  active: boolean
+  is_active: boolean
 }

@@ -19,7 +19,7 @@ export function AdSlot({ slotId, className }: AdSlotProps) {
   const slot = settings?.ad_slots?.find(s => s.id === slotId)
 
   useEffect(() => {
-    if (!slot?.code || !slot.active || !containerRef.current) return
+    if (!slot?.code || !slot.is_active || !containerRef.current) return
     const div = containerRef.current
     div.innerHTML = ''
     const wrapper = document.createElement('div')
@@ -35,7 +35,7 @@ export function AdSlot({ slotId, className }: AdSlotProps) {
     div.appendChild(wrapper)
   }, [slot])
 
-  if (!slot?.code || !slot.active) return null
+  if (!slot?.code || !slot.is_active) return null
 
   return (
     <div className={cn('my-4', className)}>

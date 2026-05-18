@@ -22,7 +22,7 @@
     "javascript"
   ],
   "status": "published",
-  "is_featured": false,
+  "is_featured": true,
   "is_breaking": true,
   "published_at": "2025-01-05T15:30:00Z",
   "updated_at": "2025-01-05T16:45:00Z",

@@ -65,7 +65,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-text-primary text-sm mb-3">Categories</h4>
             <ul className="space-y-2">
-              {categories.filter(c => c.active).slice(0, 5).map((cat) => (
+              {categories.filter(c => c.is_active).slice(0, 5).map((cat) => (
                 <li key={cat.slug}>
                   <Link
                     to={`/category/${cat.slug}`}

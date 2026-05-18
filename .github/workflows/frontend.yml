@@ -66,12 +66,14 @@ jobs:
           aws s3 sync dist/ s3://${{ secrets.FRONTEND_BUCKET }}/ \
             --delete \
             --cache-control "public,max-age=31536000,immutable" \
-            --exclude "*.html"
+            --exclude "*.html" \
+            --exclude "admin/*"
 
           aws s3 sync dist/ s3://${{ secrets.FRONTEND_BUCKET }}/ \
             --delete \
             --cache-control "public,max-age=0,must-revalidate" \
-            --include "*.html"
+            --include "*.html" \
+            --exclude "admin/*"
 
       - name: Invalidate CloudFront
         run: |

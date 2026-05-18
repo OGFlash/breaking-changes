@@ -1,9 +1,9 @@
 export const categories = [
-  { slug: 'ai', name: 'AI', description: 'Artificial intelligence, large language models, and the companies building them.', color: '#6366f1', active: true, sort_order: 1 },
-  { slug: 'gaming', name: 'Gaming', description: 'Console, PC, and mobile gaming — industry news, reviews, and controversy.', color: '#10b981', active: true, sort_order: 2 },
-  { slug: 'dev-tools', name: 'Dev Tools', description: 'IDEs, CLIs, frameworks, and the tools developers use every day.', color: '#f59e0b', active: true, sort_order: 3 },
-  { slug: 'security', name: 'Security', description: 'Vulnerabilities, breaches, CVEs, and defensive security research.', color: '#ef4444', active: true, sort_order: 4 },
-  { slug: 'business', name: 'Business', description: 'Acquisitions, funding rounds, layoffs, and the money behind the industry.', color: '#0ea5e9', active: true, sort_order: 5 },
+  { slug: 'ai', name: 'AI', description: 'Artificial intelligence, large language models, and the companies building them.', color: '#6366f1', is_active: true, sort_order: 1 },
+  { slug: 'gaming', name: 'Gaming', description: 'Console, PC, and mobile gaming — industry news, reviews, and controversy.', color: '#10b981', is_active: true, sort_order: 2 },
+  { slug: 'dev-tools', name: 'Dev Tools', description: 'IDEs, CLIs, frameworks, and the tools developers use every day.', color: '#f59e0b', is_active: true, sort_order: 3 },
+  { slug: 'security', name: 'Security', description: 'Vulnerabilities, breaches, CVEs, and defensive security research.', color: '#ef4444', is_active: true, sort_order: 4 },
+  { slug: 'business', name: 'Business', description: 'Acquisitions, funding rounds, layoffs, and the money behind the industry.', color: '#0ea5e9', is_active: true, sort_order: 5 },
 ]
 
 export const authors = [
@@ -136,11 +136,11 @@ export const settings = {
   social_youtube: null,
   beehiiv_embed_url: '',
   ad_slots: [
-    { id: 'homepage_leaderboard', label: 'Homepage Leaderboard', active: false, code: '' },
-    { id: 'article_inline_1', label: 'Article Inline 1', active: false, code: '' },
-    { id: 'article_inline_2', label: 'Article Inline 2', active: false, code: '' },
-    { id: 'article_sidebar', label: 'Article Sidebar', active: false, code: '' },
-    { id: 'category_banner', label: 'Category Banner', active: false, code: '' },
+    { id: 'homepage_leaderboard', label: 'Homepage Leaderboard', is_active: false, code: '' },
+    { id: 'article_inline_1', label: 'Article Inline 1', is_active: false, code: '' },
+    { id: 'article_inline_2', label: 'Article Inline 2', is_active: false, code: '' },
+    { id: 'article_sidebar', label: 'Article Sidebar', is_active: false, code: '' },
+    { id: 'category_banner', label: 'Category Banner', is_active: false, code: '' },
   ],
 }
 

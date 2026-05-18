@@ -89,7 +89,7 @@ export function Navbar() {
 
             {/* Categories (desktop) */}
             <div className="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar">
-              {categories.filter(c => c.active).slice(0, 6).map((cat) => (
+              {categories.filter(c => c.is_active).slice(0, 6).map((cat) => (
                 <Link
                   key={cat.slug}
                   to={`/category/${cat.slug}`}
@@ -132,7 +132,7 @@ export function Navbar() {
           <div className="md:hidden border-t border-border bg-surface">
             <div className="max-w-7xl mx-auto px-4 py-4">
               <div className="flex flex-col gap-1">
-                {categories.filter(c => c.active).map((cat) => (
+                {categories.filter(c => c.is_active).map((cat) => (
                   <Link
                     key={cat.slug}
                     to={`/category/${cat.slug}`}

@@ -139,7 +139,7 @@ export default function HomePage() {
         </div>
 
         {/* Category sections */}
-        {categories.filter(c => c.active).map((cat, idx) => {
+        {categories.filter(c => c.is_active).map((cat, idx) => {
           const catArticles = allArticlesPage?.items.filter(a => a.category.slug === cat.slug).slice(0, 4) ?? []
           if (catArticles.length === 0) return null
           return (
