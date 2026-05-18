@@ -263,7 +263,7 @@ export default function ArticlePage() {
                   <Clock className="w-3.5 h-3.5" />
                   {article.read_time_minutes} min read
                 </span>
-                {article.view_count !== undefined && (
+                {article.view_count != null && (
                   <span className="flex items-center gap-1.5">
                     <Eye className="w-3.5 h-3.5" />
                     {article.view_count.toLocaleString()} views

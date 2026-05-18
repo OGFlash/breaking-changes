@@ -92,7 +92,7 @@ export function ArticleCard({ article, size = 'default', className }: ArticleCar
             <Clock className="w-3 h-3" />
             {article.read_time_minutes}m
           </span>
-          {article.view_count !== undefined && (
+          {article.view_count != null && (
             <span className="flex items-center gap-1 ml-auto">
               <Eye className="w-3 h-3" />
               {article.view_count.toLocaleString()}
