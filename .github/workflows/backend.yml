@@ -114,3 +114,4 @@ jobs:
               CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }},
               CORS_ORIGINS=https://breakchange.com,https://www.breakchange.com
             }"
+
