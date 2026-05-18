@@ -10,7 +10,7 @@ export default function NewsletterPage() {
     <>
       <Helmet>
         <title>Newsletter — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/newsletter" />
+        <link rel="canonical" href="https://breakchange.com/newsletter" />
         <meta name="description" content="Subscribe to the Breaking Changes newsletter for weekly tech, AI, and gaming roundups." />
       </Helmet>
       <div className="max-w-lg mx-auto px-4 py-16 text-center">

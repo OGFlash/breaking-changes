@@ -37,7 +37,7 @@ export default function HomePage() {
     <>
       <Helmet>
         <title>Breaking Changes — The Latest in Tech, AI, and Gaming</title>
-        <link rel="canonical" href="https://breakingchanges.dev/" />
+        <link rel="canonical" href="https://breakchange.com/" />
         <meta name="description" content="Stay current with the latest in artificial intelligence, video games, developer tools, and tech industry news." />
         <meta property="og:title" content="Breaking Changes" />
         <meta property="og:description" content="The latest in tech, AI, and gaming." />

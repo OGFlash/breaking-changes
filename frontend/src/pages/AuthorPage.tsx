@@ -21,7 +21,7 @@ export default function AuthorPage() {
     <>
       <Helmet>
         <title>{author.name} — Breaking Changes</title>
-        <link rel="canonical" href={`https://breakingchanges.dev/author/${author.slug}`} />
+        <link rel="canonical" href={`https://breakchange.com/author/${author.slug}`} />
         <script type="application/ld+json">{JSON.stringify({ "@context": "https://schema.org", "@type": "Person", "name": author.name, "description": author.bio })}</script>
       </Helmet>
       <div className="max-w-7xl mx-auto px-4 py-8">

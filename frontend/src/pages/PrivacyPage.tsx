@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <>
       <Helmet>
         <title>Privacy Policy — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/privacy" />
+        <link rel="canonical" href="https://breakchange.com/privacy" />
       </Helmet>
       <div className="max-w-article mx-auto px-4 py-12">
         <h1 className="font-headline font-bold text-4xl mb-2">Privacy Policy</h1>

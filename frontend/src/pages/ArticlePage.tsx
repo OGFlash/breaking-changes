@@ -164,7 +164,7 @@ export default function ArticlePage() {
         <meta property="og:description" content={article.excerpt} />
         <meta property="og:image" content={article.og_image_url || article.cover_image_url} />
         <meta property="og:type" content="article" />
-        <link rel="canonical" href={`https://breakingchanges.dev/article/${article.slug}`} />
+        <link rel="canonical" href={`https://breakchange.com/article/${article.slug}`} />
         <meta property="article:author" content={article.author.name} />
         {article.published_at && <meta property="article:published_time" content={article.published_at} />}
         <script type="application/ld+json">{JSON.stringify({

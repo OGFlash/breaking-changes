@@ -3,8 +3,27 @@ from app.auth import require_admin
 from app.config import settings
 from app.services import s3, dynamodb
 from datetime import date, timedelta
+import httpx
 
 router = APIRouter()
+
+
+async def _get_beehiiv_subscriber_count() -> int | None:
+    """Fetch total subscriber count from Beehiiv V2 API."""
+    if not settings.BEEHIIV_API_KEY or not settings.BEEHIIV_PUBLICATION_ID:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            r = await client.get(
+                f"https://api.beehiiv.com/v2/publications/{settings.BEEHIIV_PUBLICATION_ID}/subscriptions",
+                params={"status": "active", "limit": 1},
+                headers={"Authorization": f"Bearer {settings.BEEHIIV_API_KEY}"},
+            )
+            r.raise_for_status()
+            data = r.json()
+            return data.get("total_results") or data.get("data", {}).get("total_results")
+    except Exception:
+        return None
 
 
 @router.get("/analytics/overview")
@@ -25,6 +44,7 @@ async def overview(_=Depends(require_admin)):
             top_articles.append({**all_meta[v["slug"]], **v})
 
     daily_chart = await dynamodb.get_daily_chart(30)
+    subscriber_count = await _get_beehiiv_subscriber_count()
 
     return {
         "total_articles": len(published),
@@ -33,6 +53,7 @@ async def overview(_=Depends(require_admin)):
         "views_week": views_week,
         "daily_chart": daily_chart,
         "top_articles": top_articles,
+        "subscriber_count": subscriber_count,
     }
 
 

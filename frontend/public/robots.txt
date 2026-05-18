@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://breakchange.com/api/sitemap.xml

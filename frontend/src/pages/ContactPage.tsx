@@ -45,7 +45,7 @@ export default function ContactPage() {
     <>
       <Helmet>
         <title>Contact — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/contact" />
+        <link rel="canonical" href="https://breakchange.com/contact" />
       </Helmet>
       <div className="max-w-lg mx-auto px-4 py-12">
         <h1 className="font-headline font-bold text-4xl mb-2">Contact Us</h1>

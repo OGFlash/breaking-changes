@@ -41,6 +41,8 @@ export default function ArticleEditorPage() {
   const [saving, setSaving] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mediaLibOpen, setMediaLibOpen] = useState(false)
+  const [htmlModalOpen, setHtmlModalOpen] = useState(false)
+  const [htmlInput, setHtmlInput] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
   const [mediaLibUploading, setMediaLibUploading] = useState(false)
   const mediaLibFileRef = useRef<HTMLInputElement>(null)
@@ -228,6 +230,8 @@ export default function ArticleEditorPage() {
               <div className="w-px h-5 bg-border mx-1" />
               <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} title="Undo"><Undo className="w-4 h-4" /></ToolbarBtn>
               <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} title="Redo"><Redo className="w-4 h-4" /></ToolbarBtn>
+              <div className="w-px h-5 bg-border mx-1" />
+              <ToolbarBtn onClick={() => { setHtmlInput(editor?.getHTML() ?? ''); setHtmlModalOpen(true) }} title="Edit raw HTML"><span className="font-mono text-[10px] font-bold">HTML</span></ToolbarBtn>
             </div>
           )}
 
@@ -238,6 +242,31 @@ export default function ArticleEditorPage() {
               className="prose prose-invert max-w-none min-h-[400px] text-text-primary [&_.tiptap]:outline-none [&_.tiptap]:min-h-[400px]"
             />
           </div>
+
+          {/* Paste HTML modal */}
+          {htmlModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setHtmlModalOpen(false)}>
+              <div className="bg-surface border border-border rounded-lg w-full max-w-2xl mx-4 p-4 flex flex-col gap-3" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-text-primary text-sm">Raw HTML</h3>
+                  <button onClick={() => setHtmlModalOpen(false)} className="text-text-muted hover:text-text-primary"><X className="w-4 h-4" /></button>
+                </div>
+                <textarea
+                  className="w-full h-80 font-mono text-xs bg-surface-raised border border-border rounded p-3 text-text-primary resize-none focus:outline-none focus:ring-1 focus:ring-accent"
+                  value={htmlInput}
+                  onChange={e => setHtmlInput(e.target.value)}
+                  spellCheck={false}
+                />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setHtmlModalOpen(false)} className="px-3 py-1.5 text-xs rounded border border-border text-text-muted hover:text-text-primary">Cancel</button>
+                  <button
+                    onClick={() => { editor?.commands.setContent(htmlInput); setDirty(true); setHtmlModalOpen(false) }}
+                    className="px-3 py-1.5 text-xs rounded bg-accent text-white hover:bg-accent/90"
+                  >Apply</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bottom status */}
           <div className="flex items-center gap-4 px-6 py-2 border-t border-border bg-surface flex-shrink-0 text-xs text-text-muted">

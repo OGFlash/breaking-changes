@@ -16,7 +16,7 @@ export default function TagPage() {
     <>
       <Helmet>
         <title>#{slug} — Breaking Changes</title>
-        <link rel="canonical" href={`https://breakingchanges.dev/tag/${slug}`} />
+        <link rel="canonical" href={`https://breakchange.com/tag/${slug}`} />
       </Helmet>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8 pb-6 border-b border-border">

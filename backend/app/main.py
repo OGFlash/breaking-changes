@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.services.settings_svc import get_site_settings
-from app.routers import articles, categories, authors, search, contact, views, admin_auth, admin_articles, admin_media, admin_categories, admin_authors, admin_tags, admin_analytics, admin_settings, admin_ads
+from app.routers import articles, categories, authors, search, contact, views, newsletter, sitemap, admin_auth, admin_articles, admin_media, admin_categories, admin_authors, admin_tags, admin_analytics, admin_settings, admin_ads, admin_ai_writer
 import structlog
 
 logger = structlog.get_logger()
@@ -40,6 +40,8 @@ app.include_router(categories.router, prefix="/api")
 app.include_router(authors.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
+app.include_router(newsletter.router, prefix="/api")
+app.include_router(sitemap.router, prefix="/api")
 app.include_router(views.router, prefix="/api")
 
 # Admin routes
@@ -52,6 +54,7 @@ app.include_router(admin_tags.router, prefix="/api/admin")
 app.include_router(admin_analytics.router, prefix="/api/admin")
 app.include_router(admin_settings.router, prefix="/api/admin")
 app.include_router(admin_ads.router, prefix="/api/admin")
+app.include_router(admin_ai_writer.router, prefix="/api/admin")
 
 
 @app.get("/api/health")

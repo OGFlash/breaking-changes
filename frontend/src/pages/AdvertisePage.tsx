@@ -5,7 +5,7 @@ export default function AdvertisePage() {
     <>
       <Helmet>
         <title>Advertise — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/advertise" />
+        <link rel="canonical" href="https://breakchange.com/advertise" />
       </Helmet>
       <div className="max-w-article mx-auto px-4 py-12">
         <h1 className="font-headline font-bold text-4xl mb-4">Advertise with Us</h1>

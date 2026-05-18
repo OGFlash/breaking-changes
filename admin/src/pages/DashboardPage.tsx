@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { adminApi } from '@/lib/api'
-import { FileText, Eye, TrendingUp, Plus } from 'lucide-react'
+import { FileText, Eye, TrendingUp, Plus, Users } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 function KPICard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) {
@@ -42,11 +42,12 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
         <KPICard label="Published Articles" value={analytics?.total_articles ?? '—'} icon={FileText} color="#6366f1" />
         <KPICard label="Total Views" value={analytics?.total_views ?? '—'} icon={Eye} color="#00d4ff" />
         <KPICard label="Views Today" value={analytics?.views_today ?? '—'} icon={TrendingUp} color="#22c55e" />
         <KPICard label="Views This Week" value={analytics?.views_week ?? '—'} icon={TrendingUp} color="#f59e0b" />
+        <KPICard label="Subscribers" value={analytics?.subscriber_count ?? '—'} icon={Users} color="#ec4899" />
       </div>
 
       {/* Chart */}

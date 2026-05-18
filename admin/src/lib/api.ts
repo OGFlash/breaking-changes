@@ -77,4 +77,16 @@ export const adminApi = {
   updateSettings: (body: any) => fetchJson<any>(`${BASE}/admin/settings`, { method: 'PUT', body: JSON.stringify(body) }),
   getAds: () => fetchJson<any[]>(`${BASE}/admin/ads`),
   updateAd: (slotId: string, body: any) => fetchJson<any>(`${BASE}/admin/ads/${slotId}`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  // AI Writer — POST endpoints return {job_id}; poll with aiPollJob
+  aiTrends: (categories: string[]) =>
+    fetchJson<{ job_id: string }>(`${BASE}/admin/ai-writer/trends`, { method: 'POST', body: JSON.stringify({ categories }) }),
+  aiResearch: (title: string, urls: string[], category: string) =>
+    fetchJson<{ job_id: string }>(`${BASE}/admin/ai-writer/research`, { method: 'POST', body: JSON.stringify({ title, urls, category }) }),
+  aiGenerate: (brief: any, word_count: number) =>
+    fetchJson<{ job_id: string }>(`${BASE}/admin/ai-writer/generate`, { method: 'POST', body: JSON.stringify({ brief, word_count }) }),
+  aiPollJob: (job_id: string) =>
+    fetchJson<{ status: string; result?: any; error?: string }>(`${BASE}/admin/ai-writer/job/${job_id}`, { method: 'GET' }),
+  aiSaveDraft: (draft: any, author_slug: string) =>
+    fetchJson<{ slug: string }>(`${BASE}/admin/ai-writer/save-draft`, { method: 'POST', body: JSON.stringify({ draft, author_slug }) }),
 }

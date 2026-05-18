@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import {
   LayoutDashboard, FileText, Image, BarChart2, Tag, Users, Settings,
-  Megaphone, Zap, LogOut, ExternalLink, FolderOpen, Menu, X
+  Megaphone, Zap, LogOut, ExternalLink, FolderOpen, Menu, X, Wand2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ const nav = [
   { to: '/authors', icon: Users, label: 'Authors' },
   { to: '/tags', icon: Tag, label: 'Tags' },
   { to: '/ads', icon: Megaphone, label: 'Ad Manager' },
+  { to: '/ai-writer', icon: Wand2, label: 'AI Writer' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 

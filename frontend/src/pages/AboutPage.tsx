@@ -6,7 +6,7 @@ export default function AboutPage() {
     <>
       <Helmet>
         <title>About — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/about" />
+        <link rel="canonical" href="https://breakchange.com/about" />
         <meta name="description" content="Learn about Breaking Changes — your source for tech, AI, and gaming news." />
       </Helmet>
       <div className="max-w-article mx-auto px-4 py-12">

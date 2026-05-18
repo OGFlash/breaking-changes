@@ -39,7 +39,7 @@ export default function SearchPage() {
     <>
       <Helmet>
         <title>{query ? `"${query}" — Search` : 'Search'} — Breaking Changes</title>
-        {query && <link rel="canonical" href={`https://breakingchanges.dev/search?q=${encodeURIComponent(query)}`} />}
+        {query && <link rel="canonical" href={`https://breakchange.com/search?q=${encodeURIComponent(query)}`} />}
       </Helmet>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="font-headline font-bold text-3xl mb-6">Search</h1>

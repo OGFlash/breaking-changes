@@ -37,8 +37,8 @@ export default function SettingsPage() {
 
         {/* Newsletter */}
         <Section title="Newsletter">
-          <Field label="Beehiiv Publication ID"><input className="input w-full" placeholder="pub_xxxxxxxx" {...register('beehiiv_publication_id')} /></Field>
-          <Field label="Beehiiv Embed URL"><input className="input w-full" placeholder="https://embeds.beehiiv.com/…" {...register('beehiiv_embed_url')} /></Field>
+          <Field label="Beehiiv Publication ID (V2)" hint="e.g. pub_xxxxxxxx-xxxx-xxxx — used for subscriber count API"><input className="input w-full" placeholder="pub_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" {...register('beehiiv_publication_id')} /></Field>
+          <Field label="Beehiiv Form ID" hint="The data-beehiiv-form UUID from your subscribe form embed script"><input className="input w-full" placeholder="f437d6d1-cf4a-41c1-9cba-3fc0e421448e" {...register('beehiiv_embed_url')} /></Field>
           <Field label="Newsletter CTA Text"><input className="input w-full" {...register('newsletter_cta')} /></Field>
         </Section>
 

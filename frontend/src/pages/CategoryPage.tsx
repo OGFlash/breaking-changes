@@ -35,7 +35,7 @@ export default function CategoryPage() {
     <>
       <Helmet>
         <title>{category?.name ?? slug} — Breaking Changes</title>
-        <link rel="canonical" href={`https://breakingchanges.dev/category/${slug}`} />
+        <link rel="canonical" href={`https://breakchange.com/category/${slug}`} />
         <meta name="description" content={category?.description ?? `Latest ${category?.name ?? slug} news.`} />
       </Helmet>
       <div className="max-w-7xl mx-auto px-4 py-8">

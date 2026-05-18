@@ -5,7 +5,7 @@ export default function TermsPage() {
     <>
       <Helmet>
         <title>Terms of Use — Breaking Changes</title>
-        <link rel="canonical" href="https://breakingchanges.dev/terms" />
+        <link rel="canonical" href="https://breakchange.com/terms" />
       </Helmet>
       <div className="max-w-article mx-auto px-4 py-12">
         <h1 className="font-headline font-bold text-4xl mb-2">Terms of Use</h1>

@@ -14,6 +14,7 @@ const AuthorsPage = lazy(() => import('@/pages/AuthorsPage'))
 const TagsPage = lazy(() => import('@/pages/TagsPage'))
 const AdsPage = lazy(() => import('@/pages/AdsPage'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+const AiWriterPage = lazy(() => import('@/pages/AiWriterPage'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="authors" element={<AuthorsPage />} />
           <Route path="tags" element={<TagsPage />} />
           <Route path="ads" element={<AdsPage />} />
+          <Route path="ai-writer" element={<AiWriterPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
