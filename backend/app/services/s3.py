@@ -120,11 +120,19 @@ async def regenerate_indexes() -> None:
     by_author: dict[str, list] = defaultdict(list)
 
     for a in meta_only:
-        cat_slug = a.get("category", {}).get("slug", "uncategorized")
+        cat = a.get("category", {})
+        cat_slug = cat if isinstance(cat, str) else (cat or {}).get("slug", "uncategorized")
+        if not cat_slug:
+            cat_slug = "uncategorized"
         by_cat[cat_slug].append(a)
         for tag in a.get("tags", []):
-            by_tag[tag].append(a)
-        author_slug = a.get("author", {}).get("slug", "unknown")
+            tag_slug = tag if isinstance(tag, str) else (tag or {}).get("slug", tag)
+            if tag_slug:
+                by_tag[tag_slug].append(a)
+        author = a.get("author", {})
+        author_slug = author if isinstance(author, str) else (author or {}).get("slug", "unknown")
+        if not author_slug:
+            author_slug = "unknown"
         by_author[author_slug].append(a)
 
     tasks = []
