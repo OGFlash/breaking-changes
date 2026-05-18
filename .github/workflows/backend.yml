@@ -98,6 +98,12 @@ jobs:
           aws lambda wait function-updated \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
 
+      - name: Set handler
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --handler handler.handler
+
       - name: Update Lambda config (env vars)
         run: |
           aws lambda update-function-configuration \
