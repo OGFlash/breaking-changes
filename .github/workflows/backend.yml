@@ -102,16 +102,18 @@ jobs:
         run: |
           aws lambda update-function-configuration \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-            --environment "Variables={
-              CONTENT_BUCKET=${{ secrets.CONTENT_BUCKET }},
-              MEDIA_BUCKET=${{ secrets.MEDIA_BUCKET }},
-              FRONTEND_BUCKET=${{ secrets.FRONTEND_BUCKET }},
-              DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }},
-              JWT_SECRET=${{ secrets.JWT_SECRET }},
-              ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }},
-              SES_SENDER_EMAIL=${{ secrets.SES_SENDER_EMAIL }},
-              ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }},
-              CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }},
-              CORS_ORIGINS=https://breakchange.com,https://www.breakchange.com
-            }"
+            --environment '{
+              "Variables": {
+                "CONTENT_BUCKET": "${{ secrets.CONTENT_BUCKET }}",
+                "MEDIA_BUCKET": "${{ secrets.MEDIA_BUCKET }}",
+                "FRONTEND_BUCKET": "${{ secrets.FRONTEND_BUCKET }}",
+                "DYNAMODB_TABLE": "${{ secrets.DYNAMODB_TABLE }}",
+                "JWT_SECRET": "${{ secrets.JWT_SECRET }}",
+                "ADMIN_PASSWORD": "${{ secrets.ADMIN_PASSWORD }}",
+                "SES_SENDER_EMAIL": "${{ secrets.SES_SENDER_EMAIL }}",
+                "ADMIN_EMAIL": "${{ secrets.ADMIN_EMAIL }}",
+                "CLOUDFRONT_DISTRIBUTION_ID": "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}",
+                "CORS_ORIGINS": "https://breakchange.com,https://www.breakchange.com"
+              }
+            }'
 
