@@ -24,9 +24,9 @@ export default function PrivacyPage() {
           <h2>Advertising</h2>
           <p>We may show ads from Carbon Ads, EthicalAds, or Google AdSense. These providers may use cookies according to their own privacy policies.</p>
           <h2>Your Rights</h2>
-          <p>If you're in the EU/EEA, you have the right to access, correct, and delete your personal data. Contact us at privacy@breakingchanges.dev.</p>
+          <p>If you're in the EU/EEA, you have the right to access, correct, and delete your personal data. Contact us at contact@wearesbt.com.</p>
           <h2>Contact</h2>
-          <p>Questions? Email privacy@breakingchanges.dev.</p>
+          <p>Questions? Email contact@wearesbt.com.</p>
         </div>
       </div>
     </>

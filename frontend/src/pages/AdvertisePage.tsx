@@ -49,7 +49,7 @@ export default function AdvertisePage() {
         <div className="card p-6 bg-surface-raised">
           <h3 className="font-headline font-bold text-xl mb-2">Get in touch</h3>
           <p className="text-text-muted mb-4">For media kit, rates, and availability, email us at:</p>
-          <a href="mailto:ads@breakingchanges.dev" className="text-accent-blue hover:underline font-medium">ads@breakingchanges.dev</a>
+          <a href="mailto:contact@wearesbt.com" className="text-accent-blue hover:underline font-medium">contact@wearesbt.com</a>
         </div>
       </div>
     </>

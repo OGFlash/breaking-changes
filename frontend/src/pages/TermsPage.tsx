@@ -25,7 +25,7 @@ export default function TermsPage() {
           <h2>Changes</h2>
           <p>We may update these terms. Continued use of the Site constitutes acceptance of the updated terms.</p>
           <h2>Contact</h2>
-          <p>Questions? Email legal@breakingchanges.dev.</p>
+          <p>Questions? Email contact@wearesbt.com.</p>
         </div>
       </div>
     </>
