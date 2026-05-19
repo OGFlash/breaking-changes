@@ -170,6 +170,11 @@ function handler(event) {
     request.uri = '/admin/index.html';
     return request;
   }
+  var articleMatch = uri.match(/^\/article\/([^\/]+)\/?$/);
+  if (articleMatch) {
+    request.uri = '/ssg/article/' + articleMatch[1] + '.html';
+    return request;
+  }
   request.uri = '/index.html';
   return request;
 }

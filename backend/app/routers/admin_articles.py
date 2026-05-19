@@ -6,6 +6,7 @@ from app.config import settings
 from app.models import Article, ArticleCreateRequest, ArticleUpdateRequest, StatusUpdateRequest
 from app.services import s3
 from app.services.s3 import regenerate_indexes
+from app.services.ssg import publish_article_html, unpublish_article_html
 import re
 
 router = APIRouter()
@@ -57,6 +58,7 @@ async def admin_create_article(body: ArticleCreateRequest, _=Depends(require_adm
 
     await s3.put_json(settings.CONTENT_BUCKET, f"articles/{slug}.json", article)
     await regenerate_indexes()
+    await publish_article_html(article)
     return article
 
 
@@ -77,6 +79,7 @@ async def admin_update_article(slug: str, body: ArticleUpdateRequest, _=Depends(
 
     await s3.put_json(settings.CONTENT_BUCKET, f"articles/{slug}.json", article)
     await regenerate_indexes()
+    await publish_article_html(article)
     return article
 
 
@@ -95,6 +98,7 @@ async def admin_update_status(slug: str, body: StatusUpdateRequest, _=Depends(re
 
     await s3.put_json(settings.CONTENT_BUCKET, f"articles/{slug}.json", article)
     await regenerate_indexes()
+    await publish_article_html(article)
     return article
 
 
@@ -102,4 +106,21 @@ async def admin_update_status(slug: str, body: StatusUpdateRequest, _=Depends(re
 async def admin_delete_article(slug: str, _=Depends(require_admin)):
     await s3.delete_object(settings.CONTENT_BUCKET, f"articles/{slug}.json")
     await regenerate_indexes()
+    await unpublish_article_html(slug)
     return {"success": True}
+
+
+@router.post("/ssg/regenerate")
+async def admin_ssg_regenerate(_=Depends(require_admin)):
+    """Backfill pre-rendered HTML for all existing published articles."""
+    articles = await s3.read_all_articles_raw()
+    published = [a for a in articles if a.get("status") == "published"]
+    count = 0
+    errors = []
+    for article in published:
+        try:
+            await publish_article_html(article)
+            count += 1
+        except Exception as exc:
+            errors.append({"slug": article.get("slug"), "error": str(exc)})
+    return {"regenerated": count, "errors": errors}
