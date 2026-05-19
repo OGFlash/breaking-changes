@@ -55,6 +55,9 @@ Scoring guide (0–100):
 Rules:
 - Assign each article a category from the target list (best match).
 - Score every article honestly — do not inflate scores.
+- PRIMARY SOURCE PRIORITY: Articles from official company blogs, government advisories,
+  or vendor newsrooms (marked is_primary=true) should score higher than secondary
+  coverage of the same event. A PlayStation Blog post beats a Kotaku post about it.
 - Aim for a spread across all categories; do not let one source dominate.
 - Return exactly the top 20 articles. Aim for at least 2-3 articles per requested category.
   If a category has fewer than 2 good matches, include the best available.
@@ -171,6 +174,7 @@ async def rank_topics(
             "upvotes": a.get("upvotes", 0),
             "comments": a.get("comments", 0),
             "snippet": (a.get("snippet") or "")[:120],
+            "is_primary": a.get("is_primary", False),
         }
         for a in articles
     ]

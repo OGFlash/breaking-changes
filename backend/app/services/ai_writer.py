@@ -21,6 +21,7 @@ from app.services.llm import (
 from app.services.trend_fetcher import (
     fetch_all_sources,
     CATEGORY_RSS_FEEDS,
+    PRIMARY_SOURCE_FEEDS,
 )
 from app.services.content_extractor import extract_content
 
@@ -126,7 +127,12 @@ def _pre_select(pool: list[dict], categories: list[str], per_cat: int = 5) -> li
         # Normalise engagement: HN scores in hundreds, RSS scores are 0
         upvotes  = min(item.get("upvotes",  0) / 50, 30.0)
         comments = min(item.get("comments", 0) / 20, 20.0)
-        return recency * 0.6 + upvotes + comments
+        score = recency * 0.6 + upvotes + comments
+        # Primary sources (official blogs, newsrooms) get a 3× boost so they
+        # always win their category slot over secondary coverage of the same story.
+        if item.get("is_primary"):
+            score *= 3.0
+        return score
 
     # Group into buckets
     buckets: dict[str, list[dict]] = {cat: [] for cat in categories}

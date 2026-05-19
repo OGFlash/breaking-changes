@@ -119,6 +119,48 @@ TECH_RSS_FEEDS = [
 ]
 
 # ---------------------------------------------------------------------------
+# Primary source feeds — official blogs, newsrooms, government advisories.
+# These are tagged is_primary=True and get a score boost in pre-selection so
+# they always beat secondary coverage of the same story.
+# Only include verified working feeds (re-test after any deploy issues).
+# ---------------------------------------------------------------------------
+
+PRIMARY_SOURCE_FEEDS: dict[str, list[tuple[str, str]]] = {
+    "gaming": [
+        ("PlayStation Blog", "https://blog.playstation.com/feed/"),   # 10 items ✓
+        ("Xbox Wire",        "https://news.xbox.com/en-us/feed/"),    # 10 items ✓
+        ("Steam News",       "https://store.steampowered.com/feeds/news/"),  # 10 items ✓
+    ],
+    "ai": [
+        ("OpenAI Blog",      "https://openai.com/news/rss.xml"),      # 965 items ✓
+        ("Google DeepMind",  "https://deepmind.google/blog/rss.xml"), # 100 items ✓
+        ("Google AI Blog",   "https://blog.google/technology/ai/rss/"),  # 20 items ✓
+        ("Microsoft AI",     "https://blogs.microsoft.com/ai/feed/"), # 10 items ✓
+        ("Meta AI",          "https://engineering.fb.com/category/ml-applications/feed/"),  # 10 items ✓
+        ("arXiv cs.AI",      "https://rss.arxiv.org/rss/cs.AI"),     # 14 items daily ✓
+    ],
+    "business": [
+        ("Apple Newsroom",   "https://www.apple.com/newsroom/rss-feed.rss"),  # 20 items ✓
+        ("Google Blog",      "https://blog.google/rss/"),             # 20 items ✓
+        ("Meta Newsroom",    "https://about.fb.com/feed/"),           # 3 items ✓
+        ("Amazon Science",   "https://www.amazon.science/index.rss"), # 4 items ✓
+        ("Stripe Blog",      "https://stripe.com/blog/feed.rss"),     # 10 items ✓
+        ("Bloomberg Tech",   "https://feeds.bloomberg.com/technology/news.rss"),  # 30 items ✓
+        ("Quartz",           "https://qz.com/rss"),                   # 43 items ✓
+    ],
+    "security": [
+        ("CISA Advisories",    "https://www.cisa.gov/cybersecurity-advisories/all.xml"),  # 30 items ✓
+        ("Google Project Zero","https://projectzero.google/feed.xml"),  # 10 items ✓
+        ("Mozilla Security",   "https://blog.mozilla.org/security/feed/"),  # 4 items ✓
+    ],
+    "dev-tools": [
+        ("AWS News",         "https://aws.amazon.com/blogs/aws/feed/"),  # large ✓
+        ("Cloudflare Blog",  "https://blog.cloudflare.com/rss/"),      # large ✓
+        ("GitHub Security",  "https://github.blog/feed/?category=security"),  # 2+ items ✓
+    ],
+}
+
+# ---------------------------------------------------------------------------
 # Category-specialist RSS feeds
 # To add a new category: add an entry here. Nothing else needs to change.
 # ---------------------------------------------------------------------------
@@ -248,6 +290,104 @@ async def fetch_reddit_posts(subreddits: list[str] | None = None, limit: int = 1
 # ---------------------------------------------------------------------------
 # Category-specialist feed fetcher (data-driven, uses CATEGORY_RSS_FEEDS)
 # ---------------------------------------------------------------------------
+
+async def fetch_primary_sources(categories: list[str], limit: int = 10) -> list[dict[str, Any]]:
+    """Fetch from official newsrooms/primary sources for the requested categories.
+
+    Returns items tagged with is_primary=True and category_hint set.
+    Driven by PRIMARY_SOURCE_FEEDS — add new entries there to extend coverage.
+    """
+    import xml.etree.ElementTree as ET
+    client = _get_client()
+    now = time.time()
+
+    async def fetch_feed(name: str, url: str, category: str) -> list[dict]:
+        try:
+            r = await client.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; feed-reader/1.0)"})
+            r.raise_for_status()
+            root = ET.fromstring(r.text)
+            ns = {"atom": "http://www.w3.org/2005/Atom"}
+            results: list[dict] = []
+
+            for item in root.findall(".//item")[:limit]:
+                title = (item.findtext("title") or "").strip()
+                link  = (item.findtext("link")  or "").strip()
+                desc  = (item.findtext("description") or "").strip()[:200]
+                pub   = item.findtext("pubDate") or ""
+                try:
+                    import email.utils
+                    age_s = now - email.utils.parsedate_to_datetime(pub).timestamp()
+                except Exception:
+                    age_s = 3600
+                if title and link:
+                    results.append({
+                        "id": f"primary-{hash(link)}",
+                        "title": title,
+                        "source": name,
+                        "source_url": link,
+                        "original_url": link,
+                        "upvotes": 0,
+                        "comments": 0,
+                        "age_hours": round(age_s / 3600, 1),
+                        "recency_score": round(_recency_score(age_s), 1),
+                        "snippet": desc,
+                        "is_primary": True,
+                        "category_hint": category,
+                    })
+
+            if not results:
+                for entry in root.findall(".//atom:entry", ns)[:limit]:
+                    title   = (entry.findtext("atom:title", namespaces=ns) or "").strip()
+                    link_el = entry.find("atom:link", ns)
+                    link    = (link_el.get("href") if link_el is not None else "") or ""
+                    summary = (entry.findtext("atom:summary", namespaces=ns) or "").strip()[:200]
+                    updated = entry.findtext("atom:updated", namespaces=ns) or ""
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+                        age_s = now - dt.timestamp()
+                    except Exception:
+                        age_s = 3600
+                    if title and link:
+                        results.append({
+                            "id": f"primary-{hash(link)}",
+                            "title": title,
+                            "source": name,
+                            "source_url": link,
+                            "original_url": link,
+                            "upvotes": 0,
+                            "comments": 0,
+                            "age_hours": round(age_s / 3600, 1),
+                            "recency_score": round(_recency_score(age_s), 1),
+                            "snippet": summary,
+                            "is_primary": True,
+                            "category_hint": category,
+                        })
+
+            logger.info("primary_feed_fetched", source=name, category=category, count=len(results))
+            return results
+        except Exception as exc:
+            logger.warning("primary_feed_error", source=name, category=category, error=str(exc))
+            return []
+
+    coros = [
+        fetch_feed(name, url, cat)
+        for cat in categories
+        for name, url in PRIMARY_SOURCE_FEEDS.get(cat, [])
+    ]
+    if not coros:
+        return []
+
+    nested = await asyncio.gather(*coros, return_exceptions=True)
+    flat = [
+        item
+        for batch in nested
+        if not isinstance(batch, Exception)
+        for item in batch
+    ]
+    logger.info("primary_sources_fetched", total=len(flat), categories=categories)
+    return flat
+
 
 async def fetch_category_rss(category: str, limit: int = 10) -> list[dict[str, Any]]:
     """Fetch news from specialist outlets for a given category slug.
@@ -499,33 +639,46 @@ async def fetch_all_sources(
     # outbound requests to fail silently, returning an empty pool.
     _reset_client()
 
-    # Build all coroutines — everything fires at once via gather
-    coros: list[Any] = [
+    # Build all coroutines — everything fires at once via gather.
+    # Primary sources and secondary sources are gathered in parallel;
+    # primaries are added to the pool FIRST so they win dedup collisions.
+    primary_coro = fetch_primary_sources(categories=categories, limit=cat_per_feed)
+
+    secondary_coros: list[Any] = [
         fetch_hn_stories(limit=hn_cap),
         fetch_reddit_posts(limit=per_source_cap),   # tech RSS broad feeds
         fetch_google_trends_rss(),
     ]
-    labels = ["hn", "tech_rss", "trends"]
+    secondary_labels = ["hn", "tech_rss", "trends"]
 
     for cat in categories:
         if cat in CATEGORY_RSS_FEEDS:
-            coros.append(fetch_category_rss(category=cat, limit=cat_per_feed))
-            labels.append(f"cat:{cat}")
+            secondary_coros.append(fetch_category_rss(category=cat, limit=cat_per_feed))
+            secondary_labels.append(f"cat:{cat}")
 
-    results_nested: list[list[dict]] = await asyncio.gather(*coros, return_exceptions=True)
+    # Fire everything in parallel — one gather for all
+    all_results = await asyncio.gather(primary_coro, *secondary_coros, return_exceptions=True)
+    primary_batch   = all_results[0] if not isinstance(all_results[0], Exception) else []
+    secondary_batches = zip(secondary_labels, all_results[1:])
 
     pool: list[dict] = []
-    for label, batch in zip(labels, results_nested):
+
+    # ── Primary sources first (they win dedup) ───────────────────────────────
+    for item in primary_batch:
+        item.setdefault("is_primary", True)
+    pool.extend(primary_batch)
+    logger.info("fetch_all_primaries_done", count=len(primary_batch))
+
+    # ── Secondary sources ────────────────────────────────────────────────────
+    for label, batch in secondary_batches:
         if isinstance(batch, Exception):
             logger.warning("fetch_all_source_error", source=label, error=str(batch))
             continue
-        # Apply per-source cap (HN and trends already limited at fetch time)
         capped = batch[:hn_cap] if label == "hn" else batch[:trends_cap] if label == "trends" else batch
-        # Tag every item with where it came from so the fallback can assign
-        # a meaningful category without the LLM's help
         cat_hint = label.split(":")[1] if label.startswith("cat:") else None
         for item in capped:
-            item["category_hint"] = cat_hint  # None for hn/tech_rss/trends
+            item.setdefault("category_hint", cat_hint)
+            item.setdefault("is_primary", False)
         pool.extend(capped)
         logger.info("fetch_all_source_done", source=label, count=len(capped))
 
