@@ -114,11 +114,12 @@ def _pre_select(pool: list[dict], categories: list[str], per_cat: int = 5) -> li
 
     Scores every article using recency + engagement, then picks the top
     `per_cat` articles from each category bucket so the LLM ranking call
-    receives a small (~25 item), already-balanced set.
+    receives a small (~35 item), already-balanced set.
 
     Buckets:
       - One per requested category (using category_hint set by fetch_all_sources)
       - One 'general' bucket for HN / tech RSS / trends items with no hint
+        (gets 2×per_cat slots so broad tech news is well represented)
     """
     def _raw_score(item: dict) -> float:
         recency = item.get("recency_score", 50.0)
@@ -138,14 +139,15 @@ def _pre_select(pool: list[dict], categories: list[str], per_cat: int = 5) -> li
         else:
             buckets["general"].append(item)
 
-    # Take top per_cat from each bucket by raw score
+    # Take top per_cat from each category bucket, 2×per_cat from general
     selected: list[dict] = []
-    for bucket_items in buckets.values():
+    for key, bucket_items in buckets.items():
+        cap = per_cat * 2 if key == "general" else per_cat
         bucket_items.sort(key=_raw_score, reverse=True)
-        selected.extend(bucket_items[:per_cat])
+        selected.extend(bucket_items[:cap])
 
     logger.info("pre_select_done", selected=len(selected),
-                breakdown={k: min(len(v), per_cat) for k, v in buckets.items()})
+                breakdown={k: min(len(v), per_cat * 2 if k == "general" else per_cat) for k, v in buckets.items()})
     return selected
 
 

@@ -56,8 +56,7 @@ Rules:
 - Assign each article a category from the target list (best match).
 - Score every article honestly — do not inflate scores.
 - Aim for a spread across categories; do not let one source dominate.
-- Only include articles with score >= 40.
-- Return the top 20, ranked by score descending.
+- Return ALL articles provided, ranked by score descending. Do not drop any.
 
 Return ONLY a valid JSON array (no markdown, no explanation):
 [
@@ -178,7 +177,7 @@ async def rank_topics(
         f"Here are {len(slim)} articles from multiple sources.\n"
         f"Target categories: {categories_str}\n\n"
         f"{_json.dumps(slim, indent=2)}\n\n"
-        f"Score and return the top {top_n} as described."
+        f"Score and rank ALL {len(slim)} articles as described. Return every one."
     )
 
     logger.info("rank_topics_start", pool_size=len(slim), categories=categories)
