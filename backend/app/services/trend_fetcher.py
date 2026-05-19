@@ -28,6 +28,18 @@ def _get_client() -> httpx.AsyncClient:
     return _client
 
 
+def _reset_client() -> None:
+    """Force a fresh AsyncClient on the next call to _get_client().
+
+    Must be called at the start of any entry-point that runs inside a
+    new asyncio event loop (e.g. the Lambda async-job handler), because
+    httpx.AsyncClient binds to the loop it was created on.  Reusing an
+    old client across event loops causes all requests to fail silently.
+    """
+    global _client
+    _client = None
+
+
 # ---------------------------------------------------------------------------
 # Recency scoring helper
 # ---------------------------------------------------------------------------
@@ -477,6 +489,12 @@ async def fetch_all_sources(
       - Category-specialist feeds for every requested category
         (capped at per_source_cap per outlet)
     """
+    # Force a fresh httpx client for this event loop invocation.
+    # The Lambda async-job handler runs inside asyncio.run() which creates a
+    # new event loop; reusing a client from a previous loop causes all
+    # outbound requests to fail silently, returning an empty pool.
+    _reset_client()
+
     # Build all coroutines — everything fires at once via gather
     coros: list[Any] = [
         fetch_hn_stories(limit=hn_cap),

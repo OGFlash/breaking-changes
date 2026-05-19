@@ -121,9 +121,15 @@ async def discover_topics(categories: list[str]) -> list[dict]:
     result_text = await rank_topics(articles=pool, categories=categories, top_n=20)
 
     topics = _extract_json(result_text)
-    if not isinstance(topics, list):
-        logger.warning("discovery_bad_output", text_preview=result_text[:300])
-        return []
+    if not isinstance(topics, list) or len(topics) == 0:
+        logger.warning("discovery_ranking_failed_using_fallback", text_preview=(result_text or "")[:300])
+        # Fallback: sort pool by recency_score and return top 20 directly
+        pool.sort(key=lambda x: x.get("recency_score", 0), reverse=True)
+        for item in pool:
+            item.setdefault("score", int(item.get("recency_score", 50)))
+            item.setdefault("signals", {"upvotes": item.get("upvotes", 0), "comments": item.get("comments", 0), "age_hours": item.get("age_hours", 0)})
+            item.setdefault("category", categories[0] if categories else "ai")
+        return pool[:20]
 
     for t in topics:
         t.setdefault("score", 50)
