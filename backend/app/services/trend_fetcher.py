@@ -447,3 +447,77 @@ async def fetch_google_trends_rss() -> list[dict[str, Any]]:
     except Exception as exc:
         logger.warning("gtrends_fetch_error", error=str(exc))
         return []
+
+
+# ---------------------------------------------------------------------------
+# Parallel pre-fetch — fires all sources simultaneously, caps per source,
+# then deduplicates so the LLM ranking call sees a clean, balanced pool.
+# ---------------------------------------------------------------------------
+
+def _normalise_title(title: str) -> str:
+    """Lowercase, strip punctuation/noise for dedup comparison."""
+    import re
+    return re.sub(r"[^a-z0-9 ]", "", title.lower()).strip()
+
+
+async def fetch_all_sources(
+    categories: list[str],
+    per_source_cap: int = 5,
+    hn_cap: int = 15,
+    trends_cap: int = 10,
+) -> list[dict[str, Any]]:
+    """
+    Fire every feed in parallel, cap each source, deduplicate, and return
+    a balanced pool ready for a single LLM ranking call.
+
+    Sources fetched:
+      - Hacker News (capped at hn_cap)
+      - Tech RSS broad feeds (capped at per_source_cap each)
+      - Google Trends (capped at trends_cap)
+      - Category-specialist feeds for every requested category
+        (capped at per_source_cap per outlet)
+    """
+    # Build all coroutines — everything fires at once via gather
+    coros: list[Any] = [
+        fetch_hn_stories(limit=hn_cap),
+        fetch_reddit_posts(limit=per_source_cap),   # tech RSS broad feeds
+        fetch_google_trends_rss(),
+    ]
+    labels = ["hn", "tech_rss", "trends"]
+
+    for cat in categories:
+        if cat in CATEGORY_RSS_FEEDS:
+            coros.append(fetch_category_rss(category=cat, limit=per_source_cap))
+            labels.append(f"cat:{cat}")
+
+    results_nested: list[list[dict]] = await asyncio.gather(*coros, return_exceptions=True)
+
+    pool: list[dict] = []
+    for label, batch in zip(labels, results_nested):
+        if isinstance(batch, Exception):
+            logger.warning("fetch_all_source_error", source=label, error=str(batch))
+            continue
+        # Apply per-source cap (HN and trends already limited at fetch time)
+        capped = batch[:hn_cap] if label == "hn" else batch[:trends_cap] if label == "trends" else batch
+        pool.extend(capped)
+        logger.info("fetch_all_source_done", source=label, count=len(capped))
+
+    # Deduplicate: keep first occurrence of any title that is >70% similar
+    seen: list[str] = []
+    deduped: list[dict] = []
+    for item in pool:
+        norm = _normalise_title(item.get("title", ""))
+        if not norm:
+            continue
+        # Simple word-overlap dedup — fast, no external deps
+        words = set(norm.split())
+        is_dup = any(
+            len(words & set(s.split())) / max(len(words | set(s.split())), 1) > 0.7
+            for s in seen
+        )
+        if not is_dup:
+            seen.append(norm)
+            deduped.append(item)
+
+    logger.info("fetch_all_sources_done", raw=len(pool), deduped=len(deduped))
+    return deduped

@@ -37,38 +37,37 @@ MAX_REACT_ITERATIONS = 12
 # System prompts
 # ---------------------------------------------------------------------------
 
-DISCOVERY_SYSTEM = """\
-You are a trend analyst for Breaking Changes, a tech news publication covering:
+RANKING_SYSTEM = """\
+You are a news editor for Breaking Changes, a tech publication covering
 AI, machine learning, cybersecurity, developer tools, gaming, and the tech industry.
 
-Your job: find the most newsworthy, relevant trending topics for our publication right now.
+You will be given a pool of articles collected from multiple sources.
+Your ONLY job is to score and rank them.
 
-Use the available tools to gather data from multiple sources. Follow the ReAct pattern:
-- REASON: Think about which sources to check and what signals indicate relevance
-- ACT: Call the appropriate tool(s)
-- OBSERVE: Review what you got back
-- REASON: Decide if you need more data or are ready to rank
-- Repeat until you have enough signal to confidently rank topics
+Target categories: {categories}
 
-Categories to match: {categories}
+Scoring guide (0–100):
+- Category relevance to Breaking Changes audience: 40%
+- Recency (lower age_hours = higher score): 30%
+- Engagement (upvotes + comments relative to source norms): 20%
+- Source authority (major outlets > blogs): 10%
 
-Tool guidance:
-- Always start with fetch_hn_stories and fetch_reddit_posts for broad signal.
-- When any target category has specialist feeds (gaming, business, security, ai, dev-tools),
-  call fetch_category_news with that category slug to get deeper, vertical-specific coverage.
-- Use fetch_google_trends for general trending signal.
-- Combine all sources before ranking — do not rely on a single feed.
+Rules:
+- Assign each article a category from the target list (best match).
+- Score every article honestly — do not inflate scores.
+- Aim for a spread across categories; do not let one source dominate.
+- Only include articles with score >= 40.
+- Return the top 20, ranked by score descending.
 
-When you have enough data, return ONLY a valid JSON array (no markdown, no explanation)
-with up to 20 items in this exact format:
+Return ONLY a valid JSON array (no markdown, no explanation):
 [
   {{
-    "id": "<source-id>",
-    "title": "<headline>",
-    "source": "<source name>",
-    "source_url": "<link to discussion>",
-    "original_url": "<link to original article>",
-    "category": "<best matching category from the list>",
+    "id": "<copy from input>",
+    "title": "<copy from input>",
+    "source": "<copy from input>",
+    "source_url": "<copy from input>",
+    "original_url": "<copy from input>",
+    "category": "<best matching category>",
     "score": <integer 0-100>,
     "signals": {{"upvotes": <int>, "comments": <int>, "age_hours": <float>}},
     "snippet": "<1-2 sentence summary>"
@@ -76,14 +75,7 @@ with up to 20 items in this exact format:
   ...
 ]
 
-Scoring guide (0–100):
-- Category relevance to Breaking Changes audience: 40%
-- Recency (lower age_hours = higher score): 30%
-- Engagement (upvotes + comments relative to source norms): 20%
-- Source authority (HN, major subreddits > individual blogs): 10%
-
-Only return topics with score >= 40. Rank by score descending.
-Return ONLY the JSON array when done — no surrounding text.
+Return ONLY the JSON array — no surrounding text.
 """
 
 RESEARCH_SYSTEM = """\
@@ -148,6 +140,59 @@ Return ONLY a valid JSON object (no markdown):
   "cover_image_query": "<unsplash search query>"
 }}
 """
+
+
+# ---------------------------------------------------------------------------
+# rank_topics — single-call ranker (replaces discovery ReAct agent)
+# ---------------------------------------------------------------------------
+
+async def rank_topics(
+    articles: list[dict],
+    categories: list[str],
+    top_n: int = 20,
+    region: str | None = None,
+) -> list[dict]:
+    """
+    Single Bedrock call: send the pre-fetched article pool to the LLM,
+    get back a scored and ranked JSON list.
+    """
+    import json as _json
+    categories_str = ", ".join(categories)
+    system = RANKING_SYSTEM.format(categories=categories_str)
+
+    # Trim the pool to a safe token budget: id, title, source, age_hours, snippet
+    slim = [
+        {
+            "id": a.get("id", ""),
+            "title": a.get("title", ""),
+            "source": a.get("source", ""),
+            "source_url": a.get("source_url", ""),
+            "original_url": a.get("original_url", ""),
+            "age_hours": a.get("age_hours", 0),
+            "upvotes": a.get("upvotes", 0),
+            "comments": a.get("comments", 0),
+            "snippet": (a.get("snippet") or "")[:150],
+        }
+        for a in articles
+    ]
+
+    user_message = (
+        f"Here are {len(slim)} articles from multiple sources.\n"
+        f"Target categories: {categories_str}\n\n"
+        f"{_json.dumps(slim, indent=2)}\n\n"
+        f"Score and return the top {top_n} as described."
+    )
+
+    logger.info("rank_topics_start", pool_size=len(slim), categories=categories)
+    result = await single_call(
+        model=settings.LLM_MODEL,
+        system_prompt=system,
+        user_message=user_message,
+        max_tokens=4096,
+        region=region,
+    )
+    logger.info("rank_topics_done")
+    return result
 
 
 # ---------------------------------------------------------------------------

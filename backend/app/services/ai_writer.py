@@ -1,10 +1,9 @@
-"""
-AI Writer orchestration — wires the ReAct agents and generation pipeline together.
+"""AI Writer orchestration - wires the generation pipeline together.
 
 Three phases:
-  1. discover_topics()  — ReAct agent w/ HN/Reddit/NewsAPI/Trends tools
-  2. research_topic()   — ReAct agent w/ URL content-extraction tool
-  3. generate_article() — single LLM call using the research brief
+  1. discover_topics()  - parallel feed fetch + single LLM ranking call
+  2. research_topic()   - ReAct agent w/ URL content-extraction tool
+  3. generate_article() - single LLM call using the research brief
 """
 from __future__ import annotations
 import json
@@ -16,148 +15,17 @@ import structlog
 
 from app.config import settings
 from app.services.llm import (
-    ReactAgent, single_call,
-    DISCOVERY_SYSTEM, RESEARCH_SYSTEM, GENERATION_SYSTEM, METADATA_SYSTEM,
+    ReactAgent, single_call, rank_topics,
+    RESEARCH_SYSTEM, GENERATION_SYSTEM, METADATA_SYSTEM,
 )
 from app.services.trend_fetcher import (
-    fetch_hn_stories,
-    fetch_reddit_posts,
-    fetch_newsapi_headlines,
-    fetch_google_trends_rss,
-    fetch_category_rss,
+    fetch_all_sources,
     CATEGORY_RSS_FEEDS,
 )
 from app.services.content_extractor import extract_content
 
 logger = structlog.get_logger()
 
-
-# ---------------------------------------------------------------------------
-# Tool schemas — Bedrock Converse API format
-# ---------------------------------------------------------------------------
-
-DISCOVERY_TOOLS = [
-    {
-        "toolSpec": {
-            "name": "fetch_hn_stories",
-            "description": (
-                "Fetch top stories from Hacker News. Returns a list of stories with "
-                "title, source URL, upvote score, comment count, age in hours, and recency score."
-            ),
-            "inputSchema": {
-                "json": {
-                    "type": "object",
-                    "properties": {
-                        "limit": {
-                            "type": "integer",
-                            "description": "Maximum number of stories to fetch (default: 30, max: 50)",
-                        }
-                    },
-                    "required": [],
-                }
-            },
-        }
-    },
-    {
-        "toolSpec": {
-            "name": "fetch_reddit_posts",
-            "description": (
-                "Fetch recent articles from major tech news RSS feeds: TechCrunch, Ars Technica, "
-                "The Verge, Wired, VentureBeat. Returns articles with title, source, link, and age."
-            ),
-            "inputSchema": {
-                "json": {
-                    "type": "object",
-                    "properties": {
-                        "subreddits": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": (
-                                "Which subreddits to check. Leave empty to check all defaults. "
-                                "Example: ['MachineLearning', 'netsec']"
-                            ),
-                        },
-                        "limit": {
-                            "type": "integer",
-                            "description": "Posts per subreddit (default: 10)",
-                        },
-                    },
-                    "required": [],
-                }
-            },
-        }
-    },
-    {
-        "toolSpec": {
-            "name": "fetch_newsapi_headlines",
-            "description": (
-                "Fetch trending developer/tech articles from Dev.to (free, no key required). "
-                "Returns recent articles with title, reactions, comments, and description."
-            ),
-            "inputSchema": {
-                "json": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Optional keyword search query (e.g., 'AI', 'cybersecurity')",
-                        },
-                        "category": {
-                            "type": "string",
-                            "description": "News category (default: 'technology')",
-                        },
-                    },
-                    "required": [],
-                }
-            },
-        }
-    },
-    {
-        "toolSpec": {
-            "name": "fetch_google_trends",
-            "description": (
-                "Fetch daily trending searches from Google Trends RSS feed for the US. "
-                "Returns trending search topics with approximate search volume."
-            ),
-            "inputSchema": {
-                "json": {
-                    "type": "object",
-                    "properties": {},
-                    "required": [],
-                }
-            },
-        }
-    },
-    {
-        "toolSpec": {
-            "name": "fetch_category_news",
-            "description": (
-                "Fetch news from category-specialist outlets. Use this when targeting a specific "
-                "vertical to get deeper, more focused coverage than general tech feeds. "
-                f"Supported categories: {', '.join(CATEGORY_RSS_FEEDS.keys())}."
-            ),
-            "inputSchema": {
-                "json": {
-                    "type": "object",
-                    "properties": {
-                        "category": {
-                            "type": "string",
-                            "description": (
-                                f"Category slug to fetch news for. "
-                                f"One of: {', '.join(CATEGORY_RSS_FEEDS.keys())}"
-                            ),
-                        },
-                        "limit": {
-                            "type": "integer",
-                            "description": "Articles per outlet (default: 10)",
-                        },
-                    },
-                    "required": ["category"],
-                }
-            },
-        }
-    },
-]
 
 RESEARCH_TOOLS = [
     {
@@ -186,31 +54,6 @@ RESEARCH_TOOLS = [
 # ---------------------------------------------------------------------------
 # Tool executors
 # ---------------------------------------------------------------------------
-
-async def _discovery_tool_executor(tool_name: str, inputs: dict) -> Any:
-    if tool_name == "fetch_hn_stories":
-        return await fetch_hn_stories(limit=inputs.get("limit", 30))
-    elif tool_name == "fetch_reddit_posts":
-        return await fetch_reddit_posts(
-            subreddits=inputs.get("subreddits"),
-            limit=inputs.get("limit", 10),
-        )
-    elif tool_name == "fetch_newsapi_headlines":
-        return await fetch_newsapi_headlines(
-            query=inputs.get("query", ""),
-            category=inputs.get("category", "technology"),
-            api_key=settings.NEWSAPI_KEY,
-        )
-    elif tool_name == "fetch_google_trends":
-        return await fetch_google_trends_rss()
-    elif tool_name == "fetch_category_news":
-        return await fetch_category_rss(
-            category=inputs.get("category", ""),
-            limit=inputs.get("limit", 10),
-        )
-    else:
-        return {"error": f"Unknown tool: {tool_name}"}
-
 
 async def _research_tool_executor(tool_name: str, inputs: dict) -> Any:
     if tool_name == "fetch_url_content":
@@ -263,45 +106,32 @@ def _extract_json(text: str) -> Any:
 
 async def discover_topics(categories: list[str]) -> list[dict]:
     """
-    Run the discovery ReAct agent to find and rank trending topics.
-    The agent calls trend-fetching tools iteratively until it has
-    enough signal to produce a ranked JSON list.
+    Phase 1 — Discovery.
+    Fires all feeds in parallel (no LLM involvement), deduplicates the
+    pool, then makes a single LLM call to score and rank the results.
+    Each source is capped before ranking so no single outlet can dominate.
     """
-    agent = ReactAgent(model=settings.LLM_MODEL)
-    categories_str = ", ".join(categories)
-    system = DISCOVERY_SYSTEM.format(categories=categories_str)
+    logger.info("discovery_fetch_start", categories=categories)
+    pool = await fetch_all_sources(categories=categories, per_source_cap=5)
+    if not pool:
+        logger.warning("discovery_empty_pool")
+        return []
 
-    user_message = (
-        f"Find the top trending tech stories right now that would be relevant to "
-        f"Breaking Changes readers. Focus on these categories: {categories_str}.\n\n"
-        f"You MUST call fetch_category_news for each of these categories: {categories_str}. "
-        f"Also call fetch_hn_stories and fetch_reddit_posts for broad signal, and "
-        f"fetch_google_trends for general trending topics. "
-        f"Do not skip any source — gather from all of them before ranking. "
-        f"Return up to 20 results, spread across the requested categories."
-    )
-
-    logger.info("discovery_agent_start", categories=categories)
-    result_text = await agent.run(
-        system_prompt=system,
-        user_message=user_message,
-        tools=DISCOVERY_TOOLS,
-        tool_executor=_discovery_tool_executor,
-    )
+    logger.info("discovery_ranking_start", pool_size=len(pool))
+    result_text = await rank_topics(articles=pool, categories=categories, top_n=20)
 
     topics = _extract_json(result_text)
     if not isinstance(topics, list):
         logger.warning("discovery_bad_output", text_preview=result_text[:300])
         return []
 
-    # Normalise and sort
     for t in topics:
         t.setdefault("score", 50)
         t.setdefault("snippet", "")
         t.setdefault("signals", {})
 
     topics.sort(key=lambda x: x.get("score", 0), reverse=True)
-    logger.info("discovery_agent_done", topic_count=len(topics))
+    logger.info("discovery_done", topic_count=len(topics))
     return topics[:20]
 
 
