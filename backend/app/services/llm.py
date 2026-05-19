@@ -65,8 +65,6 @@ Return ONLY a valid JSON array (no markdown, no explanation):
     "id": "<copy from input>",
     "title": "<copy from input>",
     "source": "<copy from input>",
-    "source_url": "<copy from input>",
-    "original_url": "<copy from input>",
     "category": "<best matching category>",
     "score": <integer 0-100>,
     "signals": {{"upvotes": <int>, "comments": <int>, "age_hours": <float>}},
@@ -160,18 +158,18 @@ async def rank_topics(
     categories_str = ", ".join(categories)
     system = RANKING_SYSTEM.format(categories=categories_str)
 
-    # Trim the pool to a safe token budget: id, title, source, age_hours, snippet
+    # Send only what the LLM needs for ranking — no URLs (we restore them
+    # from url_lookup after the call), snippets trimmed to 120 chars.
+    # Input is already pre-selected to ~25 items so token budget is safe.
     slim = [
         {
             "id": a.get("id", ""),
             "title": a.get("title", ""),
             "source": a.get("source", ""),
-            "source_url": a.get("source_url", ""),
-            "original_url": a.get("original_url", ""),
             "age_hours": a.get("age_hours", 0),
             "upvotes": a.get("upvotes", 0),
             "comments": a.get("comments", 0),
-            "snippet": (a.get("snippet") or "")[:150],
+            "snippet": (a.get("snippet") or "")[:120],
         }
         for a in articles
     ]

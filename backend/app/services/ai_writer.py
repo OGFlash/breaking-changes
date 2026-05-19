@@ -104,6 +104,51 @@ def _extract_json(text: str) -> Any:
 # Phase 1 — Discover topics
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Phase 1 helpers
+# ---------------------------------------------------------------------------
+
+def _pre_select(pool: list[dict], categories: list[str], per_cat: int = 5) -> list[dict]:
+    """
+    Deterministic pre-selection — no LLM involved.
+
+    Scores every article using recency + engagement, then picks the top
+    `per_cat` articles from each category bucket so the LLM ranking call
+    receives a small (~25 item), already-balanced set.
+
+    Buckets:
+      - One per requested category (using category_hint set by fetch_all_sources)
+      - One 'general' bucket for HN / tech RSS / trends items with no hint
+    """
+    def _raw_score(item: dict) -> float:
+        recency = item.get("recency_score", 50.0)
+        # Normalise engagement: HN scores in hundreds, RSS scores are 0
+        upvotes  = min(item.get("upvotes",  0) / 50, 30.0)
+        comments = min(item.get("comments", 0) / 20, 20.0)
+        return recency * 0.6 + upvotes + comments
+
+    # Group into buckets
+    buckets: dict[str, list[dict]] = {cat: [] for cat in categories}
+    buckets["general"] = []
+
+    for item in pool:
+        hint = item.get("category_hint")
+        if hint and hint in buckets:
+            buckets[hint].append(item)
+        else:
+            buckets["general"].append(item)
+
+    # Take top per_cat from each bucket by raw score
+    selected: list[dict] = []
+    for bucket_items in buckets.values():
+        bucket_items.sort(key=_raw_score, reverse=True)
+        selected.extend(bucket_items[:per_cat])
+
+    logger.info("pre_select_done", selected=len(selected),
+                breakdown={k: min(len(v), per_cat) for k, v in buckets.items()})
+    return selected
+
+
 async def discover_topics(categories: list[str]) -> list[dict]:
     """
     Phase 1 — Discovery.
@@ -117,24 +162,41 @@ async def discover_topics(categories: list[str]) -> list[dict]:
         logger.warning("discovery_empty_pool")
         return []
 
-    logger.info("discovery_ranking_start", pool_size=len(pool))
-    result_text = await rank_topics(articles=pool, categories=categories, top_n=20)
+    # Pre-select top articles per category bucket in pure Python.
+    # This keeps the LLM ranking payload small (~25 items) and ensures
+    # every category is represented before the LLM even sees the data.
+    candidates = _pre_select(pool, categories, per_cat=5)
+
+    logger.info("discovery_ranking_start", candidates=len(candidates))
+    # Build URL lookup before ranking — URLs are stripped from the LLM payload
+    # to save tokens, so we need to merge them back after the ranking call.
+    url_lookup: dict[str, dict] = {
+        item["id"]: {"source_url": item.get("source_url", ""), "original_url": item.get("original_url", "")}
+        for item in candidates if item.get("id")
+    }
+    result_text = await rank_topics(articles=candidates, categories=categories, top_n=20)
 
     topics = _extract_json(result_text)
     if not isinstance(topics, list) or len(topics) == 0:
         logger.warning("discovery_ranking_failed_using_fallback", text_preview=(result_text or "")[:300])
-        # Fallback: sort pool by recency_score and return top 20 directly
-        pool.sort(key=lambda x: x.get("recency_score", 0), reverse=True)
-        for item in pool:
+        # Fallback: candidates are already pre-scored and balanced by category.
+        # Sort by raw recency+engagement and return directly.
+        candidates.sort(key=lambda x: x.get("recency_score", 0), reverse=True)
+        for item in candidates:
+            hint = item.get("category_hint")
+            item.setdefault("category", hint if hint else "ai")
             item.setdefault("score", int(item.get("recency_score", 50)))
             item.setdefault("signals", {"upvotes": item.get("upvotes", 0), "comments": item.get("comments", 0), "age_hours": item.get("age_hours", 0)})
-            item.setdefault("category", categories[0] if categories else "ai")
-        return pool[:20]
+        return candidates[:20]
 
     for t in topics:
         t.setdefault("score", 50)
         t.setdefault("snippet", "")
         t.setdefault("signals", {})
+        # Restore URLs stripped from the LLM payload
+        urls = url_lookup.get(t.get("id", ""), {})
+        t.setdefault("source_url", urls.get("source_url", ""))
+        t.setdefault("original_url", urls.get("original_url", ""))
 
     topics.sort(key=lambda x: x.get("score", 0), reverse=True)
     logger.info("discovery_done", topic_count=len(topics))
