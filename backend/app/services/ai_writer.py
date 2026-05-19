@@ -24,6 +24,8 @@ from app.services.trend_fetcher import (
     fetch_reddit_posts,
     fetch_newsapi_headlines,
     fetch_google_trends_rss,
+    fetch_category_rss,
+    CATEGORY_RSS_FEEDS,
 )
 from app.services.content_extractor import extract_content
 
@@ -126,6 +128,35 @@ DISCOVERY_TOOLS = [
             },
         }
     },
+    {
+        "toolSpec": {
+            "name": "fetch_category_news",
+            "description": (
+                "Fetch news from category-specialist outlets. Use this when targeting a specific "
+                "vertical to get deeper, more focused coverage than general tech feeds. "
+                f"Supported categories: {', '.join(CATEGORY_RSS_FEEDS.keys())}."
+            ),
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        "category": {
+                            "type": "string",
+                            "description": (
+                                f"Category slug to fetch news for. "
+                                f"One of: {', '.join(CATEGORY_RSS_FEEDS.keys())}"
+                            ),
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "description": "Articles per outlet (default: 10)",
+                        },
+                    },
+                    "required": ["category"],
+                }
+            },
+        }
+    },
 ]
 
 RESEARCH_TOOLS = [
@@ -172,6 +203,11 @@ async def _discovery_tool_executor(tool_name: str, inputs: dict) -> Any:
         )
     elif tool_name == "fetch_google_trends":
         return await fetch_google_trends_rss()
+    elif tool_name == "fetch_category_news":
+        return await fetch_category_rss(
+            category=inputs.get("category", ""),
+            limit=inputs.get("limit", 10),
+        )
     else:
         return {"error": f"Unknown tool: {tool_name}"}
 

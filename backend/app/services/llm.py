@@ -52,6 +52,13 @@ Use the available tools to gather data from multiple sources. Follow the ReAct p
 
 Categories to match: {categories}
 
+Tool guidance:
+- Always start with fetch_hn_stories and fetch_reddit_posts for broad signal.
+- When any target category has specialist feeds (gaming, business, security, ai, dev-tools),
+  call fetch_category_news with that category slug to get deeper, vertical-specific coverage.
+- Use fetch_google_trends for general trending signal.
+- Combine all sources before ranking — do not rely on a single feed.
+
 When you have enough data, return ONLY a valid JSON array (no markdown, no explanation)
 with up to 10 items in this exact format:
 [

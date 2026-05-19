@@ -106,6 +106,49 @@ TECH_RSS_FEEDS = [
     ("VentureBeat", "https://venturebeat.com/feed/"),
 ]
 
+# ---------------------------------------------------------------------------
+# Category-specialist RSS feeds
+# To add a new category: add an entry here. Nothing else needs to change.
+# ---------------------------------------------------------------------------
+
+CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
+    "gaming": [
+        ("IGN",               "https://feeds.ign.com/ign/all"),
+        ("Kotaku",            "https://kotaku.com/rss"),
+        ("Eurogamer",         "https://www.eurogamer.net/?format=rss"),
+        ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),
+        ("PC Gamer",          "https://www.pcgamer.com/rss/"),
+    ],
+    "business": [
+        ("Reuters Tech",      "https://feeds.reuters.com/reuters/technologyNews"),
+        ("Fortune",           "https://fortune.com/feed/"),
+        ("TechCrunch Startups","https://techcrunch.com/category/startups/feed/"),
+        ("Crunchbase News",   "https://news.crunchbase.com/feed/"),
+        ("Inc. Technology",   "https://www.inc.com/technology/rss"),
+    ],
+    "security": [
+        ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
+        ("Bleeping Computer", "https://www.bleepingcomputer.com/feed/"),
+        ("Dark Reading",      "https://www.darkreading.com/rss/all.xml"),
+        ("The Hacker News",   "https://feeds.feedburner.com/TheHackersNews"),
+        ("Threatpost",        "https://threatpost.com/feed/"),
+    ],
+    "ai": [
+        ("MIT Tech Review",         "https://www.technologyreview.com/feed/"),
+        ("VentureBeat AI",          "https://venturebeat.com/category/ai/feed/"),
+        ("Hugging Face Blog",       "https://huggingface.co/blog/feed.xml"),
+        ("Import AI (Substack)",    "https://importai.substack.com/feed"),
+        ("The Batch (DeepLearning)","https://www.deeplearning.ai/the-batch/feed/"),
+    ],
+    "dev-tools": [
+        ("GitHub Blog",   "https://github.blog/feed/"),
+        ("The New Stack", "https://thenewstack.io/blog/feed/"),
+        ("InfoQ",         "https://www.infoq.com/feed.action?type=news"),
+        ("Changelog",     "https://changelog.com/feed"),
+        ("Dev.to",        "https://dev.to/feed"),
+    ],
+}
+
 
 async def fetch_reddit_posts(subreddits: list[str] | None = None, limit: int = 10) -> list[dict[str, Any]]:
     """Fetch recent articles from major tech RSS feeds.
@@ -185,6 +228,97 @@ async def fetch_reddit_posts(subreddits: list[str] | None = None, limit: int = 1
     nested = await asyncio.gather(*[fetch_feed(name, url) for name, url in TECH_RSS_FEEDS])
     flat = [item for sub_list in nested for item in sub_list]
     logger.info("reddit_fetched", count=len(flat))  # keep key name for LLM tool compatibility
+    return flat
+
+
+# ---------------------------------------------------------------------------
+# Category-specialist feed fetcher (data-driven, uses CATEGORY_RSS_FEEDS)
+# ---------------------------------------------------------------------------
+
+async def fetch_category_rss(category: str, limit: int = 10) -> list[dict[str, Any]]:
+    """Fetch news from specialist outlets for a given category slug.
+
+    Driven entirely by CATEGORY_RSS_FEEDS — adding a new category requires
+    only a new entry in that dict.
+    """
+    import xml.etree.ElementTree as ET
+    client = _get_client()
+    now = time.time()
+    feeds = CATEGORY_RSS_FEEDS.get(category, [])
+    if not feeds:
+        logger.warning("category_rss_unknown", category=category)
+        return []
+
+    async def fetch_feed(name: str, url: str) -> list[dict]:
+        try:
+            r = await client.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; feed-reader/1.0)"})
+            r.raise_for_status()
+            root = ET.fromstring(r.text)
+            ns = {"atom": "http://www.w3.org/2005/Atom"}
+            results: list[dict] = []
+
+            # RSS 2.0
+            for item in root.findall(".//item")[:limit]:
+                title = (item.findtext("title") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                desc = (item.findtext("description") or "").strip()[:200]
+                pub = item.findtext("pubDate") or ""
+                try:
+                    import email.utils
+                    age_s = now - email.utils.parsedate_to_datetime(pub).timestamp()
+                except Exception:
+                    age_s = 3600
+                if title and link:
+                    results.append({
+                        "id": f"cat-{hash(link)}",
+                        "title": title,
+                        "source": name,
+                        "source_url": link,
+                        "original_url": link,
+                        "upvotes": 0,
+                        "comments": 0,
+                        "age_hours": round(age_s / 3600, 1),
+                        "recency_score": round(_recency_score(age_s), 1),
+                        "snippet": desc,
+                    })
+
+            # Atom feeds
+            if not results:
+                for entry in root.findall(".//atom:entry", ns)[:limit]:
+                    title = (entry.findtext("atom:title", namespaces=ns) or "").strip()
+                    link_el = entry.find("atom:link", ns)
+                    link = (link_el.get("href") if link_el is not None else "") or ""
+                    summary = (entry.findtext("atom:summary", namespaces=ns) or "").strip()[:200]
+                    updated = entry.findtext("atom:updated", namespaces=ns) or ""
+                    try:
+                        from datetime import datetime
+                        dt = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+                        age_s = now - dt.timestamp()
+                    except Exception:
+                        age_s = 3600
+                    if title and link:
+                        results.append({
+                            "id": f"cat-{hash(link)}",
+                            "title": title,
+                            "source": name,
+                            "source_url": link,
+                            "original_url": link,
+                            "upvotes": 0,
+                            "comments": 0,
+                            "age_hours": round(age_s / 3600, 1),
+                            "recency_score": round(_recency_score(age_s), 1),
+                            "snippet": summary,
+                        })
+
+            logger.info("category_feed_fetched", source=name, category=category, count=len(results))
+            return results
+        except Exception as exc:
+            logger.warning("category_feed_error", source=name, category=category, error=str(exc))
+            return []
+
+    nested = await asyncio.gather(*[fetch_feed(name, url) for name, url in feeds])
+    flat = [item for sub_list in nested for item in sub_list]
+    logger.info("category_rss_fetched", category=category, count=len(flat))
     return flat
 
 
