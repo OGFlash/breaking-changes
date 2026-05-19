@@ -147,7 +147,8 @@ def _pre_select(pool: list[dict], categories: list[str], per_cat: int = 5) -> li
         selected.extend(bucket_items[:cap])
 
     logger.info("pre_select_done", selected=len(selected),
-                breakdown={k: min(len(v), per_cat * 2 if k == "general" else per_cat) for k, v in buckets.items()})
+                breakdown={k: min(len(v), per_cat * 2 if k == "general" else per_cat) for k, v in buckets.items()},
+                pool_size=len(pool))
     return selected
 
 
@@ -167,7 +168,7 @@ async def discover_topics(categories: list[str]) -> list[dict]:
     # Pre-select top articles per category bucket in pure Python.
     # This keeps the LLM ranking payload small (~25 items) and ensures
     # every category is represented before the LLM even sees the data.
-    candidates = _pre_select(pool, categories, per_cat=5)
+    candidates = _pre_select(pool, categories, per_cat=8)
 
     logger.info("discovery_ranking_start", candidates=len(candidates))
     # Build URL lookup before ranking — URLs are stripped from the LLM payload

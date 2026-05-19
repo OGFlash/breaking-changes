@@ -124,12 +124,14 @@ TECH_RSS_FEEDS = [
 # ---------------------------------------------------------------------------
 
 CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
+    # Verified working as of 2025. Re-test with scripts/check_feeds.sh after any deploy issues.
     "gaming": [
-        ("Kotaku",            "https://kotaku.com/rss"),
-        ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),
-        ("PC Gamer",          "https://www.pcgamer.com/rss/"),
-        ("GameSpot",          "https://www.gamespot.com/feeds/mashup/"),
-        ("PCGamesN",          "https://www.pcgamesn.com/feed"),
+        ("Kotaku",            "https://kotaku.com/rss"),             # 20 items
+        ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),  # 93 items
+        ("PC Gamer",          "https://www.pcgamer.com/rss/"),       # 50 items
+        ("PCGamesN",          "https://www.pcgamesn.com/feed"),      # 62 items
+        ("GamesRadar",        "https://www.gamesradar.com/rss/"),    # 50 items
+        ("GameSpot",          "https://www.gamespot.com/feeds/mashup/"), # 15 items
     ],
     "business": [
         ("Fortune",              "https://fortune.com/feed/"),
@@ -140,24 +142,24 @@ CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
     ],
     "security": [
         ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
-        ("Bleeping Computer", "https://www.bleepingcomputer.com/feed/"),
-        ("Dark Reading",      "https://www.darkreading.com/rss/all.xml"),
-        ("The Hacker News",   "https://feeds.feedburner.com/TheHackersNews"),
+        ("The Hacker News",   "https://feeds.feedburner.com/TheHackersNews"),  # 47 items
         ("Threatpost",        "https://threatpost.com/feed/"),
+        ("CyberScoop",        "https://cyberscoop.com/feed/"),       # replaces dead Dark Reading
+        ("Ars Security",      "https://feeds.arstechnica.com/arstechnica/security"),
     ],
     "ai": [
-        ("MIT Tech Review",         "https://www.technologyreview.com/feed/"),
-        ("VentureBeat AI",          "https://venturebeat.com/category/ai/feed/"),
-        ("Hugging Face Blog",       "https://huggingface.co/blog/feed.xml"),
-        ("Import AI (Substack)",    "https://importai.substack.com/feed"),
-        ("The Batch (DeepLearning)","https://www.deeplearning.ai/the-batch/feed/"),
+        ("MIT Tech Review",  "https://www.technologyreview.com/feed/"),
+        ("VentureBeat AI",   "https://venturebeat.com/category/ai/feed/"),
+        ("Hugging Face Blog","https://huggingface.co/blog/feed.xml"),
+        ("TechCrunch AI",    "https://techcrunch.com/category/artificial-intelligence/feed/"),  # 20 items
+        ("AI Weekly",        "https://aiweekly.co/issues.rss"),      # 20 items, replaces dead Import AI
     ],
     "dev-tools": [
         ("GitHub Blog",   "https://github.blog/feed/"),
         ("The New Stack", "https://thenewstack.io/blog/feed/"),
         ("InfoQ",         "https://www.infoq.com/feed.action?type=news"),
         ("Changelog",     "https://changelog.com/feed"),
-        ("Dev.to",        "https://dev.to/feed"),
+        ("Dev.to Top",    "https://dev.to/feed/tag/devops"),
     ],
 }
 
@@ -474,20 +476,22 @@ def _normalise_title(title: str) -> str:
 
 async def fetch_all_sources(
     categories: list[str],
-    per_source_cap: int = 5,
-    hn_cap: int = 15,
+    per_source_cap: int = 10,
+    hn_cap: int = 20,
     trends_cap: int = 10,
+    cat_per_feed: int = 10,
 ) -> list[dict[str, Any]]:
     """
     Fire every feed in parallel, cap each source, deduplicate, and return
     a balanced pool ready for a single LLM ranking call.
 
     Sources fetched:
-      - Hacker News (capped at hn_cap)
-      - Tech RSS broad feeds (capped at per_source_cap each)
-      - Google Trends (capped at trends_cap)
+      - Hacker News            (capped at hn_cap, default 20)
+      - Tech RSS broad feeds   (capped at per_source_cap each, default 10)
+      - Google Trends          (capped at trends_cap, default 10)
       - Category-specialist feeds for every requested category
-        (capped at per_source_cap per outlet)
+        (capped at cat_per_feed per outlet, default 10 — independent of
+         per_source_cap so broad and specialist feeds can be tuned separately)
     """
     # Force a fresh httpx client for this event loop invocation.
     # The Lambda async-job handler runs inside asyncio.run() which creates a
@@ -505,7 +509,7 @@ async def fetch_all_sources(
 
     for cat in categories:
         if cat in CATEGORY_RSS_FEEDS:
-            coros.append(fetch_category_rss(category=cat, limit=per_source_cap))
+            coros.append(fetch_category_rss(category=cat, limit=cat_per_feed))
             labels.append(f"cat:{cat}")
 
     results_nested: list[list[dict]] = await asyncio.gather(*coros, return_exceptions=True)
@@ -517,6 +521,11 @@ async def fetch_all_sources(
             continue
         # Apply per-source cap (HN and trends already limited at fetch time)
         capped = batch[:hn_cap] if label == "hn" else batch[:trends_cap] if label == "trends" else batch
+        # Tag every item with where it came from so the fallback can assign
+        # a meaningful category without the LLM's help
+        cat_hint = label.split(":")[1] if label.startswith("cat:") else None
+        for item in capped:
+            item["category_hint"] = cat_hint  # None for hn/tech_rss/trends
         pool.extend(capped)
         logger.info("fetch_all_source_done", source=label, count=len(capped))
 
