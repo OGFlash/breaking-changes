@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { BreakingTicker } from '@/components/BreakingTicker'
+import { LiveEventBanner } from '@/components/LiveEventBanner'
 
 const HomePage = lazy(() => import('@/pages/HomePage'))
 const ArticlePage = lazy(() => import('@/pages/ArticlePage'))
@@ -17,6 +18,7 @@ const NewsletterPage = lazy(() => import('@/pages/NewsletterPage'))
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'))
 const TermsPage = lazy(() => import('@/pages/TermsPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+const LivePage = lazy(() => import('@/pages/LivePage'))
 
 function PageSkeleton() {
   return (
@@ -34,6 +36,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg text-text-primary flex flex-col">
       <BreakingTicker />
+      <LiveEventBanner />
       <Navbar />
       <main className="flex-1">
         <Suspense fallback={<PageSkeleton />}>
@@ -50,6 +53,7 @@ export default function App() {
             <Route path="/newsletter" element={<NewsletterPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/live" element={<LivePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>

@@ -13,5 +13,12 @@
   "social_mastodon": "",
   "social_youtube": "",
   "ga_measurement_id": "",
-  "default_og_image": ""
+  "default_og_image": "",
+  "live_event": {
+    "enabled": false,
+    "platform": "youtube",
+    "stream_url": "",
+    "title": "",
+    "label": "LIVE NOW"
+  }
 }

@@ -96,6 +96,7 @@ export interface SiteSettings {
   adsense_publisher_id?: string
   default_og_image_url?: string
   ad_slots: AdSlot[]
+  live_event?: LiveEvent
 }
 
 export interface AdSlot {
@@ -104,4 +105,12 @@ export interface AdSlot {
   description: string
   code: string
   is_active: boolean
+}
+
+export interface LiveEvent {
+  enabled: boolean
+  platform: 'youtube' | 'twitch'
+  stream_url: string
+  title: string
+  label: string
 }

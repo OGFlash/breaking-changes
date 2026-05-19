@@ -56,6 +56,14 @@ async def featured_articles():
         return []
 
 
+@router.get("/articles/breaking")
+async def breaking_articles():
+    try:
+        return await s3.get_json(settings.CONTENT_BUCKET, "indexes/breaking.json")
+    except Exception:
+        return []
+
+
 @router.get("/articles/trending")
 async def trending_articles():
     trending = await dynamodb.get_trending(5)

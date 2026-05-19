@@ -34,6 +34,9 @@ export const api = {
   getTrending: () =>
     fetchJson<ArticleMeta[]>(`${BASE}/articles/trending`),
 
+  getBreaking: () =>
+    fetchJson<ArticleMeta[]>(`${BASE}/articles/breaking`),
+
   // Categories
   getCategories: () =>
     fetchJson<Category[]>(`${BASE}/categories`),

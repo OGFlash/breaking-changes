@@ -133,6 +133,14 @@ class AdSlot(BaseModel):
     active: bool = True
 
 
+class LiveEvent(BaseModel):
+    enabled: bool = False
+    platform: str = "youtube"
+    stream_url: str = ""
+    title: str = ""
+    label: str = "LIVE NOW"
+
+
 class SiteSettings(BaseModel):
     site_name: str = "Breaking Changes"
     tagline: str = "The latest in tech, AI, and gaming."
@@ -153,3 +161,4 @@ class SiteSettings(BaseModel):
     adsense_publisher_id: Optional[str] = None
     default_og_image_url: Optional[str] = None
     ad_slots: list[AdSlot] = []
+    live_event: Optional[LiveEvent] = None

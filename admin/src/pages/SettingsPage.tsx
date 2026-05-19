@@ -63,6 +63,37 @@ export default function SettingsPage() {
           <Field label="Site Description (meta)"><textarea className="input w-full h-20 resize-none" {...register('site_description')} /></Field>
         </Section>
 
+        {/* Live Event Stream */}
+        <Section title="Live Event Stream">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Enable live banner &amp; /live page</p>
+              <p className="text-xs text-text-muted mt-0.5">Shows a LIVE NOW banner sitewide and activates the /live stream page</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" {...register('live_event.enabled')} />
+              <div className="w-10 h-5 bg-surface-raised border border-border peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+            </label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Platform">
+              <select className="input w-full" {...register('live_event.platform')}>
+                <option value="youtube">YouTube</option>
+                <option value="twitch">Twitch</option>
+              </select>
+            </Field>
+            <Field label="Badge Label" hint='e.g. "LIVE NOW" or "WATCH LIVE"'>
+              <input className="input w-full" placeholder="LIVE NOW" {...register('live_event.label')} />
+            </Field>
+          </div>
+          <Field label="Stream URL" hint="YouTube watch URL or Twitch channel URL">
+            <input className="input w-full" placeholder="https://youtube.com/watch?v=… or https://twitch.tv/channel" {...register('live_event.stream_url')} />
+          </Field>
+          <Field label="Event Title" hint="Shown in the banner and on the /live page">
+            <input className="input w-full" placeholder="Google I/O '26 Keynote" {...register('live_event.title')} />
+          </Field>
+        </Section>
+
         <div className="flex gap-3">
           <button type="submit" className="btn-primary" disabled={isSubmitting || !isDirty}>
             {isSubmitting ? 'Saving…' : 'Save Settings'}
