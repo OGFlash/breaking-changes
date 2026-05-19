@@ -113,18 +113,18 @@ TECH_RSS_FEEDS = [
 
 CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
     "gaming": [
-        ("IGN",               "https://feeds.ign.com/ign/all"),
         ("Kotaku",            "https://kotaku.com/rss"),
-        ("Eurogamer",         "https://www.eurogamer.net/?format=rss"),
         ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),
         ("PC Gamer",          "https://www.pcgamer.com/rss/"),
+        ("GameSpot",          "https://www.gamespot.com/feeds/mashup/"),
+        ("PCGamesN",          "https://www.pcgamesn.com/feed"),
     ],
     "business": [
-        ("Reuters Tech",      "https://feeds.reuters.com/reuters/technologyNews"),
-        ("Fortune",           "https://fortune.com/feed/"),
-        ("TechCrunch Startups","https://techcrunch.com/category/startups/feed/"),
-        ("Crunchbase News",   "https://news.crunchbase.com/feed/"),
-        ("Inc. Technology",   "https://www.inc.com/technology/rss"),
+        ("Fortune",              "https://fortune.com/feed/"),
+        ("TechCrunch Startups",  "https://techcrunch.com/category/startups/feed/"),
+        ("Fast Company",         "https://www.fastcompany.com/technology/rss"),
+        ("WSJ Tech",             "https://feeds.a.dj.com/rss/RSSWSJD.xml"),
+        ("TechCrunch Fundings",  "https://techcrunch.com/category/venture/feed/"),
     ],
     "security": [
         ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
