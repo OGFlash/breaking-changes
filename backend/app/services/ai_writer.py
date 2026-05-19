@@ -273,9 +273,12 @@ async def discover_topics(categories: list[str]) -> list[dict]:
 
     user_message = (
         f"Find the top trending tech stories right now that would be relevant to "
-        f"Breaking Changes readers. Focus on these categories: {categories_str}. "
-        f"Check multiple sources (Hacker News, Reddit, Google Trends, and NewsAPI if available) "
-        f"and reason carefully about which stories are most newsworthy and relevant."
+        f"Breaking Changes readers. Focus on these categories: {categories_str}.\n\n"
+        f"You MUST call fetch_category_news for each of these categories: {categories_str}. "
+        f"Also call fetch_hn_stories and fetch_reddit_posts for broad signal, and "
+        f"fetch_google_trends for general trending topics. "
+        f"Do not skip any source — gather from all of them before ranking. "
+        f"Return up to 20 results, spread across the requested categories."
     )
 
     logger.info("discovery_agent_start", categories=categories)
@@ -299,7 +302,7 @@ async def discover_topics(categories: list[str]) -> list[dict]:
 
     topics.sort(key=lambda x: x.get("score", 0), reverse=True)
     logger.info("discovery_agent_done", topic_count=len(topics))
-    return topics[:10]
+    return topics[:20]
 
 
 # ---------------------------------------------------------------------------

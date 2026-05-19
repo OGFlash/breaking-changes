@@ -60,7 +60,7 @@ Tool guidance:
 - Combine all sources before ranking — do not rely on a single feed.
 
 When you have enough data, return ONLY a valid JSON array (no markdown, no explanation)
-with up to 10 items in this exact format:
+with up to 20 items in this exact format:
 [
   {{
     "id": "<source-id>",
