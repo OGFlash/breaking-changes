@@ -111,11 +111,11 @@ async def fetch_hn_stories(limit: int = 30) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 TECH_RSS_FEEDS = [
-    ("TechCrunch", "https://techcrunch.com/feed/"),
-    ("Ars Technica", "https://feeds.arstechnica.com/arstechnica/index"),
-    ("The Verge", "https://www.theverge.com/rss/index.xml"),
-    ("Wired", "https://www.wired.com/feed/rss"),
-    ("VentureBeat", "https://venturebeat.com/feed/"),
+    ("TechCrunch",  "https://techcrunch.com/feed/"),
+    ("Ars Technica","https://feeds.arstechnica.com/arstechnica/index"),
+    ("The Verge",   "https://www.theverge.com/rss/index.xml"),
+    ("VentureBeat", "https://venturebeat.com/feed"),        # /feed/ redirects → use real URL
+    ("Fast Company","https://www.fastcompany.com/technology/rss"),  # replaces Wired (1 item, bot-blocked)
 ]
 
 # ---------------------------------------------------------------------------
@@ -126,38 +126,38 @@ TECH_RSS_FEEDS = [
 CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
     # Verified working as of 2025. Re-test with scripts/check_feeds.sh after any deploy issues.
     "gaming": [
-        ("Kotaku",            "https://kotaku.com/rss"),             # 20 items
-        ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),  # 93 items
-        ("PC Gamer",          "https://www.pcgamer.com/rss/"),       # 50 items
-        ("PCGamesN",          "https://www.pcgamesn.com/feed"),      # 62 items
-        ("GamesRadar",        "https://www.gamesradar.com/rss/"),    # 50 items
-        ("GameSpot",          "https://www.gamespot.com/feeds/mashup/"), # 15 items
+        ("Kotaku",            "https://kotaku.com/feed"),              # real URL (was /rss → redirect)
+        ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),
+        ("PC Gamer",          "https://www.pcgamer.com/rss/"),
+        ("PCGamesN",          "https://www.pcgamesn.com/mainrss.xml"), # real URL (was /feed → redirect)
+        ("GamesRadar",        "https://www.gamesradar.com/feeds.xml"), # real URL (was /rss/ → redirect)
+        ("GameSpot",          "https://www.gamespot.com/feeds/mashup/"),
     ],
     "business": [
-        ("Fortune",              "https://fortune.com/feed/"),
-        ("TechCrunch Startups",  "https://techcrunch.com/category/startups/feed/"),
-        ("Fast Company",         "https://www.fastcompany.com/technology/rss"),
-        ("WSJ Tech",             "https://feeds.a.dj.com/rss/RSSWSJD.xml"),
-        ("TechCrunch Fundings",  "https://techcrunch.com/category/venture/feed/"),
+        ("Fortune",             "https://fortune.com/feed/fortune-feeds/?id=3230629"), # real URL
+        ("TechCrunch Startups", "https://techcrunch.com/category/startups/feed/"),
+        ("Fast Company",        "https://www.fastcompany.com/technology/rss"),
+        ("WSJ Tech",            "https://feeds.a.dj.com/rss/RSSWSJD.xml"),
+        ("TechCrunch Venture",  "https://techcrunch.com/category/venture/feed/"),
     ],
     "security": [
         ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
-        ("The Hacker News",   "https://feeds.feedburner.com/TheHackersNews"),  # 47 items
+        ("The Hacker News",   "https://feeds.feedburner.com/TheHackersNews"),
         ("Threatpost",        "https://threatpost.com/feed/"),
-        ("CyberScoop",        "https://cyberscoop.com/feed/"),       # replaces dead Dark Reading
-        ("Ars Security",      "https://feeds.arstechnica.com/arstechnica/security"),
+        ("CyberScoop",        "https://cyberscoop.com/feed/"),
+        ("Ars Technica",      "https://feeds.arstechnica.com/arstechnica/index"),  # replaces dead Ars Security (404)
     ],
     "ai": [
         ("MIT Tech Review",  "https://www.technologyreview.com/feed/"),
-        ("VentureBeat AI",   "https://venturebeat.com/category/ai/feed/"),
+        ("VentureBeat AI",   "https://venturebeat.com/category/ai/feed"),  # real URL (was /feed/ → 2 items)
         ("Hugging Face Blog","https://huggingface.co/blog/feed.xml"),
-        ("TechCrunch AI",    "https://techcrunch.com/category/artificial-intelligence/feed/"),  # 20 items
-        ("AI Weekly",        "https://aiweekly.co/issues.rss"),      # 20 items, replaces dead Import AI
+        ("TechCrunch AI",    "https://techcrunch.com/category/artificial-intelligence/feed/"),
+        ("AI Weekly",        "https://aiweekly.co/issues.rss"),
     ],
     "dev-tools": [
         ("GitHub Blog",   "https://github.blog/feed/"),
         ("The New Stack", "https://thenewstack.io/blog/feed/"),
-        ("InfoQ",         "https://www.infoq.com/feed.action?type=news"),
+        ("SD Times",      "https://sdtimes.com/feed/"),              # replaces InfoQ (broken redirect)
         ("Changelog",     "https://changelog.com/feed"),
         ("Dev.to Top",    "https://dev.to/feed/tag/devops"),
     ],
