@@ -158,6 +158,10 @@ PRIMARY_SOURCE_FEEDS: dict[str, list[tuple[str, str]]] = {
         ("Cloudflare Blog",  "https://blog.cloudflare.com/rss/"),      # large ✓
         ("GitHub Security",  "https://github.blog/feed/?category=security"),  # 2+ items ✓
     ],
+    "politics": [
+        ("EU Digital Strategy", "https://digital-strategy.ec.europa.eu/en/rss.xml"),  # ✓
+        ("Congress.gov",        "https://www.congress.gov/rss/most-viewed-bills.xml"),  # ✓
+    ],
 }
 
 # ---------------------------------------------------------------------------
@@ -167,6 +171,7 @@ PRIMARY_SOURCE_FEEDS: dict[str, list[tuple[str, str]]] = {
 
 CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
     # Verified working as of 2025. Re-test with scripts/check_feeds.sh after any deploy issues.
+    # To add a new category: add an entry here and optionally in PRIMARY_SOURCE_FEEDS above.
     "gaming": [
         ("Kotaku",            "https://kotaku.com/feed"),              # real URL (was /rss → redirect)
         ("Rock Paper Shotgun","https://www.rockpapershotgun.com/feed"),
@@ -202,6 +207,13 @@ CATEGORY_RSS_FEEDS: dict[str, list[tuple[str, str]]] = {
         ("SD Times",      "https://sdtimes.com/feed/"),              # replaces InfoQ (broken redirect)
         ("Changelog",     "https://changelog.com/feed"),
         ("Dev.to Top",    "https://dev.to/feed/tag/devops"),
+    ],
+    "politics": [
+        ("Politico Tech",       "https://rss.politico.com/technology.xml"),         # ✓
+        ("The Verge Policy",    "https://www.theverge.com/rss/policy/index.xml"),   # ✓
+        ("Ars Technica Policy", "https://feeds.arstechnica.com/arstechnica/tech-policy"),  # ✓
+        ("The Hill Tech",       "https://thehill.com/homenews/technology/feed/"),   # ✓ replaces dead Reuters
+        ("Wired",               "https://www.wired.com/feed/rss"),                  # ✓ replaces dead Wired Politics
     ],
 }
 

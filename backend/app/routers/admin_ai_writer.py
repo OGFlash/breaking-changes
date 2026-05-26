@@ -97,6 +97,7 @@ _CAT_KEYWORDS: dict[str, list[str]] = {
     "dev-tools": ["dev", "tool", "developer", "programming", "code", "software", "framework", "open-source", "github", "npm", "package"],
     "security":  ["security", "cyber", "hack", "breach", "ransomware", "malware", "vuln", "exploit", "phish", "token", "leak"],
     "business":  ["business", "startup", "funding", "acquisition", "ipo", "revenue", "market", "ceo", "layoff", "deal"],
+    "politics":  ["politics", "political", "government", "congress", "senate", "regulation", "antitrust", "policy", "legislation", "election", "white house", "administration", "law", "bipartisan"],
 }
 
 

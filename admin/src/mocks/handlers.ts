@@ -69,6 +69,7 @@ let categories: any[] = [
   { slug: 'dev-tools', name: 'Dev Tools', color: '#f59e0b', icon: '🛠️', description: 'Developer tools', sort_order: 3, active: true, article_count: 1 },
   { slug: 'security', name: 'Security', color: '#ef4444', icon: '🔒', description: 'Security news', sort_order: 4, active: true, article_count: 0 },
   { slug: 'business', name: 'Business', color: '#0ea5e9', icon: '💼', description: 'Tech business', sort_order: 5, active: true, article_count: 0 },
+  { slug: 'politics', name: 'Politics', color: '#a855f7', icon: '🏛️', description: 'Tech policy and government regulation', sort_order: 6, active: true, article_count: 0 },
 ]
 
 let authors: any[] = [

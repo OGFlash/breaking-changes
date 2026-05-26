@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 type Phase = 'discover' | 'research' | 'generate'
 
-const SITE_CATEGORIES = ['ai', 'cybersecurity', 'dev-tools', 'gaming', 'business', 'open-source']
+const SITE_CATEGORIES = ['ai', 'security', 'dev-tools', 'gaming', 'business', 'politics']
 
 // ── Source badge colours ────────────────────────────────────────────────────
 function SourceBadge({ source }: { source: string }) {

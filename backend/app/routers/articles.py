@@ -35,6 +35,8 @@ async def list_articles(
     if breaking is not None:
         items = [a for a in items if a.get("is_breaking") == breaking]
 
+    await _merge_view_counts(items)
+
     total = len(items)
     start = (page - 1) * limit
     page_items = items[start : start + limit]
@@ -48,20 +50,34 @@ async def list_articles(
     )
 
 
+async def _merge_view_counts(items: list) -> list:
+    """Merge live DynamoDB view counts into a list of article dicts."""
+    try:
+        all_views = await dynamodb.scan_all_views()
+        views_map = {v["slug"]: v["total_views"] for v in all_views}
+        for item in items:
+            item["view_count"] = views_map.get(item["slug"], item.get("view_count") or 0)
+    except Exception:
+        pass
+    return items
+
+
 @router.get("/articles/featured")
 async def featured_articles():
     try:
-        return await s3.get_json(settings.CONTENT_BUCKET, "indexes/featured.json")
+        items = await s3.get_json(settings.CONTENT_BUCKET, "indexes/featured.json")
     except Exception:
         return []
+    return await _merge_view_counts(items)
 
 
 @router.get("/articles/breaking")
 async def breaking_articles():
     try:
-        return await s3.get_json(settings.CONTENT_BUCKET, "indexes/breaking.json")
+        items = await s3.get_json(settings.CONTENT_BUCKET, "indexes/breaking.json")
     except Exception:
         return []
+    return await _merge_view_counts(items)
 
 
 @router.get("/articles/trending")

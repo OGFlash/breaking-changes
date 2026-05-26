@@ -43,5 +43,14 @@
     "icon": "briefcase",
     "sort_order": 5,
     "is_active": true
+  },
+  {
+    "slug": "politics",
+    "name": "Politics",
+    "description": "Tech policy, government regulation, antitrust, and the intersection of politics and technology.",
+    "color": "#a855f7",
+    "icon": "landmark",
+    "sort_order": 6,
+    "is_active": true
   }
 ]

@@ -324,6 +324,7 @@ def render_article_html(article: dict) -> str:
       <a href="{DOMAIN}/category/security">Security</a>
       <a href="{DOMAIN}/category/dev-tools">Dev Tools</a>
       <a href="{DOMAIN}/category/business">Business</a>
+      <a href="{DOMAIN}/category/politics">Politics</a>
     </div>
   </div>
 </nav>
